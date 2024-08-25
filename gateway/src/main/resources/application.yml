@@ -6,6 +6,10 @@ spring:
     username: ticket_easy
     password: password
 
+springdoc:
+    api-docs:
+      enabled: ${SWAGGER_ENABLE:true}
+
 api:
   security:
     token:
