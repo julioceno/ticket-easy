@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: ticket-easy
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ticket_easy
+    username: ticket_easy
+    password: password
+
+api:
+  security:
+    token:
+      secret: ${JWT_SECRET:secret}}
