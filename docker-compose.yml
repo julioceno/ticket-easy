@@ -10,5 +10,13 @@ services:
       - 'POSTGRES_DB=ticket_easy'
     ports:
       - 5432:5432
+  mongodb:
+    image: mongo
+    restart: always
+    volumes:
+      - mongo-data:/data:db
+    ports:
+      - 27017:27017
 volumes:
   postgres-data:
+  mongo-data:
