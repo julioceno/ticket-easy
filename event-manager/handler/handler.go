@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/julioceno/ticket-easy/event-manager/config"
+	"github.com/julioceno/ticket-easy/event-manager/config/mongoConnection"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -10,5 +10,5 @@ var (
 )
 
 func IntializeHandler() {
-	db = config.InitConnectionDatabase()
+	db = mongoConnection.InitConnectionDatabase()
 }

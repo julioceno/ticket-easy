@@ -1,8 +1,7 @@
-package config
+package mongoConnection
 
 import (
 	"context"
-	"fmt"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -19,13 +18,6 @@ func InitConnectionDatabase() *mongo.Client {
 	if err := client.Ping(ctx, options.Client().ReadPreference); err != nil {
 		panic("Occured an error in make ping in mongo connection")
 	}
-
-	defer func() {
-		fmt.Print("Disconectin database...")
-		if err = client.Disconnect(ctx); err != nil {
-			panic(err)
-		}
-	}()
 
 	return client
 }
