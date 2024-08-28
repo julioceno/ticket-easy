@@ -8,8 +8,8 @@ import (
 )
 
 type ResponseFormat struct {
-	Count int64       `json"count"`
-	Data  interface{} `json"data"`
+	Count int64       `json:"count"`
+	Data  interface{} `json:"data"`
 }
 
 func SendSuccess(ctx *gin.Context, op string, data interface{}) {
