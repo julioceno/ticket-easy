@@ -4,13 +4,12 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/julioceno/ticket-easy/event-manager/handler"
 )
 
 func Initialize() {
 	router := gin.Default()
+	router.Use(apiKeyMiddleware())
 
-	handler.IntializeHandler()
 	initializeRoutes(router)
 
 	port := os.Getenv("PORT")

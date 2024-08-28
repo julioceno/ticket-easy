@@ -2,46 +2,30 @@ package handler
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/julioceno/ticket-easy/event-manager/schemas"
+	"github.com/julioceno/ticket-easy/event-manager/config/logger"
 	"github.com/julioceno/ticket-easy/event-manager/utils"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func GetEvents(ctx *gin.Context) {
-	fmt.Println("Getting collection")
-	eventsCollection := db.Database("events").Collection("events")
-
-	fmt.Println("Creating context mongo")
 	ctxMongo, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	fmt.Println("Creating context mongo", eventsCollection, ctxMongo)
-	cursor, err := eventsCollection.Find(ctxMongo, bson.D{})
+	count, err := eventsRepository.CountEvents(ctx, ctxMongo)
 	if err != nil {
-		log.Fatal("Occurred an error", err)
+		logger.Error("Error in get cursor event", err)
+		utils.SendError(ctx, http.StatusBadRequest, "Não foi possível recuperar os eventos")
+		return
 	}
 
-	defer cursor.Close(ctx)
-
-	events := []schemas.Event{}
-
-	fmt.Println("Calling cursor")
-	for cursor.Next(ctxMongo) {
-		fmt.Println("Decoding event...")
-		var event schemas.Event
-		err := cursor.Decode(&event)
-		if err != nil {
-			log.Println("Error decoding event:", err)
-			ctx.AbortWithStatusJSON(500, gin.H{"error": "Error decoding event"})
-			return
-		}
-		events = append(events, event)
+	events, err := eventsRepository.FetchEvents(ctx, ctxMongo)
+	if err != nil {
+		utils.SendError(ctx, http.StatusBadRequest, "Não foi possível recuperar os eventos")
+		return
 	}
 
-	utils.SendSuccess(ctx, "GET", events)
+	utils.SendSuccess(ctx, "GET", utils.ResponseFormat{Count: count, Data: events})
 }

@@ -1,14 +1,13 @@
 package handler
 
 import (
-	"github.com/julioceno/ticket-easy/event-manager/config/mongoConnection"
-	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/julioceno/ticket-easy/event-manager/repository"
 )
 
 var (
-	db *mongo.Client
+	eventsRepository *repository.EventsRepository
 )
 
-func IntializeHandler() {
-	db = mongoConnection.InitConnectionDatabase()
+func init() {
+	eventsRepository = repository.NewEventRepository()
 }

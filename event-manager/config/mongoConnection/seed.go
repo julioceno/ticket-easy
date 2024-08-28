@@ -15,9 +15,7 @@ func Seed() {
 	events := buildEvents()
 	ctx := context.Background()
 
-	db := InitConnectionDatabase()
-	collection := GetMongoCollection(db, "events")
-
+	collection := GetMongoCollection(Database, "events")
 	hasDocuments := verifyIfHasDocuments(collection, ctx)
 	if hasDocuments {
 		logger.Info("Has documents in event collection")

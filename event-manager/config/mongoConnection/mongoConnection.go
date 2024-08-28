@@ -3,23 +3,29 @@ package mongoConnection
 import (
 	"context"
 
+	"github.com/julioceno/ticket-easy/event-manager/config/logger"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func InitConnectionDatabase() *mongo.Client {
+var (
+	Database *mongo.Client
+)
+
+func init() {
 	ctx := context.Background()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017")) // TODO: adicionar numa variavel de ambiente
+	// TODO: adicionar numa variavel de ambiente
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
 
 	if err != nil {
-		panic("Occurred an error with mongo connection")
+		logger.Fatal("Occurred an error with mongo connection", err)
 	}
 
 	if err := client.Ping(ctx, options.Client().ReadPreference); err != nil {
-		panic("Occured an error in make ping in mongo connection")
+		logger.Fatal("Occured an error in make ping in mongo connection", err)
 	}
 
-	return client
+	Database = client
 }
 
 func GetMongoCollection(db *mongo.Client, nameCollection string) *mongo.Collection {
