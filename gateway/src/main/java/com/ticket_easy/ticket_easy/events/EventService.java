@@ -31,14 +31,21 @@ public class EventService {
         RestTemplate restTemplate = new RestTemplate();
 
         try {
-            String url = UriComponentsBuilder.fromHttpUrl(getUrl())
-                    .queryParam("name", query.getName())
-                    .queryParam("skip", query.getSkip())
-                    .queryParam("limit", query.getLimit())
-                    .toUriString();
+            UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(getUrl());
+            if (query.getName() != null) {
+                urlBuilder.queryParam("name", query.getName());
+            }
+
+            if (query.getSkip() != null) {
+                urlBuilder.queryParam("skip", query.getSkip());
+            }
+
+            if (query.getLimit() != null) {
+                urlBuilder.queryParam("limit", query.getLimit());
+            }
 
             ResponseEntity<ResponseEventsListDTO> response = restTemplate.exchange(
-                    url,
+                    urlBuilder.toUriString(),
                     HttpMethod.GET,
                     httpEntity,
                     ResponseEventsListDTO.class,
