@@ -20,7 +20,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/events")
 @ApiResponses(value = {
         @ApiResponse(responseCode = "400",  description = "Erro de requisição", content = @Content(schema = @Schema(implementation = StandardError.class))),
-        @ApiResponse(responseCode = "403", description = "Usuário não autenticado", content = @Content(schema = @Schema(implementation = StandardError.class))),
+        @ApiResponse(responseCode = "401", description = "Usuário não autenticado", content = @Content(schema = @Schema(implementation = StandardError.class))),
+        @ApiResponse(responseCode = "403", description = "Não é possível acessar essa rota", content = @Content(schema = @Schema(implementation = StandardError.class))),
         @ApiResponse(responseCode = "500", description = "Erro desconhecido", content = @Content(schema = @Schema(implementation = StandardError.class))),
 })
 @SecuritySchemes({
@@ -32,6 +33,9 @@ public class EventController {
 
     @GetMapping
     @Operation(summary = "Busca por eventos")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Retorna todos os eventos e a quantidade de eventos encontrados"),
+    })
     public ResponseEntity<ResponseEventsListDTO> fetchEvents() {
         ResponseEventsListDTO response = eventService.fetchEvents();
         return ResponseEntity.ok(response);
@@ -39,6 +43,9 @@ public class EventController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Busca um evento pelo id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Retorna um evento"),
+    })
     public ResponseEntity<ResponseEventDTO> fetchEvent(@PathVariable String id) {
         ResponseEventDTO response = eventService.fetchEvent(id);
         return ResponseEntity.ok(response);

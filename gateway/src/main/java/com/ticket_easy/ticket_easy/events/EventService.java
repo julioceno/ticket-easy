@@ -1,8 +1,8 @@
 package com.ticket_easy.ticket_easy.events;
 
-import com.ticket_easy.ticket_easy.common.validations.IntgrationValidation;
+import com.ticket_easy.ticket_easy.common.validations.IntegrationErrorMap;
 import com.ticket_easy.ticket_easy.events.dto.*;
-import com.ticket_easy.ticket_easy.users.services.FindOneUserService;
+import com.ticket_easy.ticket_easy.exceptions.InternalServerErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,8 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
-import static java.lang.String.format;
 
 @Service
 public class EventService {
@@ -31,17 +29,20 @@ public class EventService {
         HttpEntity<String> httpEntity = createHttpEntity();
         RestTemplate restTemplate = new RestTemplate();
 
-        ResponseEntity<ResponseEventsListDTO> response = restTemplate.exchange(
-                getUrl(),
-                HttpMethod.GET,
-                httpEntity,
-                ResponseEventsListDTO.class
-        );
+        try {
+            ResponseEntity<ResponseEventsListDTO> response = restTemplate.exchange(
+                    getUrl(),
+                    HttpMethod.GET,
+                    httpEntity,
+                    ResponseEventsListDTO.class
+            );
 
-        // TODO: handler errors
-
-        logger.info("FETCH EVENTS: Response obtained");
-        return response.getBody();
+            logger.info("FETCH EVENTS: Response obtained");
+            return response.getBody();
+        } catch (HttpClientErrorException err) {
+            IntegrationErrorMap.validation(err);
+            throw new InternalServerErrorException("Ocorreu um erro deconhecido");
+        }
     }
 
     public ResponseEventDTO fetchEvent(String id) {
@@ -62,8 +63,8 @@ public class EventService {
             logger.info("FETCH: Response obtained");
             return response.getBody();
         } catch (HttpClientErrorException err) {
-            IntgrationValidation.validation(err);
-            throw new RuntimeException();
+            IntegrationErrorMap.validation(err);
+            throw new InternalServerErrorException("Ocorreu um erro deconhecido");
         }
     }
 

@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-public class ResponseErrorDTO<T> {
+public class ResponseErrorDTO {
     private String message;
     private Long status;
 }

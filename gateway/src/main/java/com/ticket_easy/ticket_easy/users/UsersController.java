@@ -27,7 +27,8 @@ import java.net.URI;
 @RequestMapping(value = "/users")
 @ApiResponses(value = {
         @ApiResponse(responseCode = "400",  description = "Erro de requisição", content = @Content(schema = @Schema(implementation = StandardError.class))),
-        @ApiResponse(responseCode = "403", description = "Usuário não autenticado", content = @Content(schema = @Schema(implementation = StandardError.class))),
+        @ApiResponse(responseCode = "401", description = "Usuário não autenticado", content = @Content(schema = @Schema(implementation = StandardError.class))),
+        @ApiResponse(responseCode = "403", description = "Não é possível acessar essa rota", content = @Content(schema = @Schema(implementation = StandardError.class))),
         @ApiResponse(responseCode = "500", description = "Erro desconhecido", content = @Content(schema = @Schema(implementation = StandardError.class))),
 })
 @SecuritySchemes({

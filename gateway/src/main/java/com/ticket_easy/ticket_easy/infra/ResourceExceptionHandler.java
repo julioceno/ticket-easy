@@ -1,7 +1,9 @@
 package com.ticket_easy.ticket_easy.infra;
 
 import com.ticket_easy.ticket_easy.exceptions.BadRequestException;
+import com.ticket_easy.ticket_easy.exceptions.InternalServerErrorException;
 import com.ticket_easy.ticket_easy.exceptions.NotFoundException;
+import com.ticket_easy.ticket_easy.exceptions.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,28 @@ public class ResourceExceptionHandler {
     ) {
         String error = "Not Found";
         HttpStatus status = HttpStatus.NOT_FOUND;
+        StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(status).body(err);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<StandardError> badRequest(
+            UnauthorizedException e,
+            HttpServletRequest request
+    ) {
+        String error = "Unauthorized";
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(status).body(err);
+    }
+
+    @ExceptionHandler(InternalServerErrorException.class)
+    public ResponseEntity<StandardError> badRequest(
+            InternalServerErrorException e,
+            HttpServletRequest request
+    ) {
+        String error = "Unknown Error";
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(), request.getRequestURI());
         return ResponseEntity.status(status).body(err);
     }
