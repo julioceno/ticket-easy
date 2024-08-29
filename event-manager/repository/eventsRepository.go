@@ -3,11 +3,11 @@ package repository
 import (
 	"context"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/julioceno/ticket-easy/event-manager/config/logger"
 	"github.com/julioceno/ticket-easy/event-manager/config/mongoConnection"
+	"github.com/julioceno/ticket-easy/event-manager/schemas"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,23 +18,13 @@ type EventsRepository struct {
 	collection *mongo.Collection
 }
 
-type Event struct {
-	Id              primitive.ObjectID `json:"id,omitempty"`
-	Name            string             `json:"name"`
-	Description     string             `json:"description"`
-	TicketValue     float64            `json:"ticketValue"`
-	ImagesUrl       []string           `json:"imagesUrl"`
-	QuantityTickets int                `json:"quantityTickets"`
-	OccuredAt       time.Time          `json:"occuredAt"`
-}
-
 func NewEventRepository() *EventsRepository {
 	return &EventsRepository{
 		collection: mongoConnection.GetMongoCollection(mongoConnection.Database, mongoConnection.DatabaseName.EVENTS),
 	}
 }
 
-func (r *EventsRepository) FetchEvents(ctx *gin.Context, ctxMongo context.Context) ([]Event, error) {
+func (r *EventsRepository) FetchEvents(ctx *gin.Context, ctxMongo context.Context) ([]schemas.Event, error) {
 	filter := createFilter(ctx)
 	opts, _ := createSortOptions(ctx)
 
@@ -45,9 +35,9 @@ func (r *EventsRepository) FetchEvents(ctx *gin.Context, ctxMongo context.Contex
 
 	defer cursor.Close(ctxMongo)
 
-	var events []Event
+	var events []schemas.Event
 	for cursor.Next(ctxMongo) {
-		var event Event
+		var event schemas.Event
 		if err := cursor.Decode(&event); err != nil {
 			logger.Error("Error decoding event:", err)
 			return nil, err
@@ -68,14 +58,20 @@ func (r *EventsRepository) CountEvents(ctx *gin.Context, ctxMongo context.Contex
 	return count, nil
 }
 
-func (r *EventsRepository) FindById(id string, ctxMongo context.Context) Event {
-	objID, _ := primitive.ObjectIDFromHex(id)
+func (r *EventsRepository) FindById(id string, ctxMongo context.Context) *schemas.Event {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil
+	}
+
+	var event schemas.Event
 	document := r.collection.FindOne(ctxMongo, bson.M{"_id": objID})
+	err = document.Decode(&event)
+	if err != nil {
+		return nil
+	}
 
-	var event Event
-	document.Decode(&event)
-
-	return event
+	return &event
 }
 
 func createFilter(ctx *gin.Context) primitive.D {
