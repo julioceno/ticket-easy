@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class EventService {
@@ -24,17 +25,24 @@ public class EventService {
     @Value("${api.integrations.event.secret}")
     private String secret;
 
-    public ResponseEventsListDTO fetchEvents() {
+    public ResponseEventsListDTO fetchEvents(QueryEventsDTO query) {
         logger.info("FETCH EVENTS: Creating request in event api...");
         HttpEntity<String> httpEntity = createHttpEntity();
         RestTemplate restTemplate = new RestTemplate();
 
         try {
+            String url = UriComponentsBuilder.fromHttpUrl(getUrl())
+                    .queryParam("name", query.getName())
+                    .queryParam("skip", query.getSkip())
+                    .queryParam("limit", query.getLimit())
+                    .toUriString();
+
             ResponseEntity<ResponseEventsListDTO> response = restTemplate.exchange(
-                    getUrl(),
+                    url,
                     HttpMethod.GET,
                     httpEntity,
-                    ResponseEventsListDTO.class
+                    ResponseEventsListDTO.class,
+                    query
             );
 
             logger.info("FETCH EVENTS: Response obtained");

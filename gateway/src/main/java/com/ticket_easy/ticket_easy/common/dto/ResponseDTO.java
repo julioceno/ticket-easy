@@ -9,12 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class ResponseDTO<T> {
-    @JsonProperty("message")
     private String message;
-
-    @JsonProperty("status")
     private Long status;
-
-    @JsonProperty("data")
     private T data;
 }

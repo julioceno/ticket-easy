@@ -1,6 +1,7 @@
 package com.ticket_easy.ticket_easy.events;
 
 
+import com.ticket_easy.ticket_easy.events.dto.QueryEventsDTO;
 import com.ticket_easy.ticket_easy.events.dto.ResponseEventDTO;
 import com.ticket_easy.ticket_easy.events.dto.ResponseEventsListDTO;
 import com.ticket_easy.ticket_easy.infra.StandardError;
@@ -36,8 +37,8 @@ public class EventController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Retorna todos os eventos e a quantidade de eventos encontrados"),
     })
-    public ResponseEntity<ResponseEventsListDTO> fetchEvents() {
-        ResponseEventsListDTO response = eventService.fetchEvents();
+    public ResponseEntity<ResponseEventsListDTO> fetchEvents(QueryEventsDTO query) {
+        ResponseEventsListDTO response = eventService.fetchEvents(query);
         return ResponseEntity.ok(response);
     }
 
