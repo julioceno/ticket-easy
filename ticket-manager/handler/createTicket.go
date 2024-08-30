@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/julioceno/ticket-easy/ticket-manager/config/logger"
 	"github.com/julioceno/ticket-easy/ticket-manager/schemas"
@@ -17,16 +18,18 @@ type _body struct {
 	EventId string `json:"eventId" validate:"required"`
 }
 
-type _response struct {
-	UserId  string `json:"userId" validate:"required"`
-	EventId string `json:"eventId" validate:"required"`
-}
-
 func CreateTicket(ctx *gin.Context) {
 	var body _body
 	if err := utils.DecodeBody(ctx, &body); err != nil {
 		logger.Error("Ocurred error when try decode body", err)
 		utils.SendError(ctx, http.StatusBadRequest, "Ocorreu um erro ao tentar criar o ticket")
+		return
+	}
+
+	validate := validator.New()
+	if err := validate.Struct(body); err != nil {
+		logger.Error("Ocurred error validate body", err)
+		utils.SendError(ctx, http.StatusBadRequest, "O body da requisição está incorreto")
 		return
 	}
 
@@ -41,6 +44,10 @@ func CreateTicket(ctx *gin.Context) {
 	defer cancel()
 
 	ticketCreated, err := ticketsRepository.Create(ctx, ctxMongo, ticket)
+	if err != nil {
+		logger.Error("Ocurred error when try create ticket", err)
+		utils.SendError(ctx, http.StatusBadRequest, "Ocorreu um erro ao tentar criar o ticket")
+	}
 
 	response := ticketCreated.ToResponse()
 	responseStatus := http.StatusCreated

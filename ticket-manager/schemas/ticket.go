@@ -12,6 +12,7 @@ const (
 	StatusBuy TicketStatus = "BUY"
 )
 
+// TODO: salvar dia do evento, salvar dados do evento como o nome e o valor do ingresso
 type Ticket struct {
 	Id      primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	Status  TicketStatus       `json:"status" bson:"status"`
