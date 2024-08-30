@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 	"github.com/julioceno/ticket-easy/ticket-manager/config/logger"
 	"github.com/julioceno/ticket-easy/ticket-manager/schemas"
 	"github.com/julioceno/ticket-easy/ticket-manager/utils"
@@ -55,16 +54,10 @@ func CreateTicket(ctx *gin.Context) {
 }
 
 func createTicket(body _body) (*schemas.Ticket, error) {
-	key, err := uuid.NewRandom()
-	if err != nil {
-		return nil, err
-	}
-
 	ticket := schemas.Ticket{
-		Status:  schemas.StatusBuy,
+		Status:  schemas.StatusProcessing,
 		EventId: body.EventId,
 		UserId:  body.UserId,
-		Key:     key.String(),
 	}
 
 	return &ticket, nil
