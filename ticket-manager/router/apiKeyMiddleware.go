@@ -11,8 +11,7 @@ import (
 )
 
 func apiKeyMiddleware() gin.HandlerFunc {
-	err := godotenv.Load()
-	if err != nil {
+	if err := godotenv.Load(); err != nil {
 		logger.Fatal("Error loading .env file", err)
 	}
 

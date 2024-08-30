@@ -1,8 +1,6 @@
 package handler
 
-import (
-	"github.com/julioceno/ticket-easy/event-manager/repository"
-)
+import "github.com/julioceno/ticket-easy/event-manager/repository"
 
 var (
 	eventsRepository *repository.EventsRepository
