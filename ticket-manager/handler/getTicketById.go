@@ -2,11 +2,13 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/julioceno/ticket-easy/ticket-manager/config/logger"
+	"github.com/julioceno/ticket-easy/ticket-manager/schemas"
 	"github.com/julioceno/ticket-easy/ticket-manager/utils"
 )
 
@@ -23,12 +25,22 @@ func GetTicketById(ctx *gin.Context) {
 	defer cancel()
 
 	ticket := ticketsRepository.FindById(id, ctxMongo)
-	if ticket == nil {
-		logger.Error("Ticket not exists", err)
-		utils.SendError(ctx, http.StatusNotFound, "Não existe um ticket com esse id")
+	if hasError := throwErrorIfNotExistsEvent(ctx, ticket); hasError {
 		return
 	}
 
 	response := ticket.ToResponse()
 	utils.SendSuccess(utils.SendSuccesStruct{ctx, "GET", response, nil})
+}
+
+func throwErrorIfNotExistsEvent(ctx *gin.Context, ticket *schemas.Ticket) bool {
+	if ticket != nil {
+		return false
+	}
+
+	ticketId, _ := utils.GetIdParam(ctx)
+	logger.Error("Event not found", nil)
+	utils.SendError(ctx, http.StatusNotFound, fmt.Sprintf("Ingresso com o id %s não existe", ticketId))
+
+	return true
 }

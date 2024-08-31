@@ -2,7 +2,11 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +19,16 @@ import (
 type _body struct {
 	UserId  string `json:"userId" validate:"required"`
 	EventId string `json:"eventId" validate:"required"`
+}
+
+type _responseEvent struct {
+	Id              string    `json:"_id""`
+	Name            string    `json:"name"`
+	Description     string    `json:"description"`
+	TicketValue     float64   `json:"ticketValue"`
+	ImagesUrl       []string  `json:"imagesUrl"`
+	QuantityTickets int       `json:"quantityTickets"`
+	OccuredAt       time.Time `json:"occuredAt"`
 }
 
 func CreateTicket(ctx *gin.Context) {
@@ -49,6 +63,12 @@ func CreateTicket(ctx *gin.Context) {
 		return
 	}
 
+	_, messageError := buyTicket(ctx, ticketCreated)
+	if messageError != nil {
+		// TODO: atualizar ticket setando a mensagem de erro
+		return
+	}
+
 	response := ticketCreated.ToResponse()
 	responseStatus := http.StatusCreated
 	utils.SendSuccess(utils.SendSuccesStruct{ctx, "POST", response, &responseStatus})
@@ -62,4 +82,37 @@ func createTicket(body _body) (*schemas.Ticket, error) {
 	}
 
 	return &ticket, nil
+}
+
+func buyTicket(ctx *gin.Context, ticket *schemas.Ticket) (*_responseEvent, *string) {
+	messageError := "Ocorreu um erro ao efetuar a compra, entre em contato com nossa equipe de suporte"
+
+	eventUrl := os.Getenv("EVENT_URL")
+	url := fmt.Sprintf("%s/events/%s/reduce-ticket", eventUrl, ticket.Id)
+
+	resp, err := http.Post(url, "application/json", nil)
+	if err != nil {
+		logger.Error("Occurred error in call event system", err)
+		utils.SendError(ctx, http.StatusBadGateway, "Ocorreu um problema ao efetuar ao solicitar a compra do ingresso")
+		return nil, &messageError
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
+	if err != nil {
+		logger.Error("Occurred error when try read body", err)
+		utils.SendError(ctx, http.StatusBadGateway, "Ocorreu um problema ao efetuar ao solicitar a compra do ingresso")
+		return nil, &messageError
+	}
+
+	var responseStruct _responseEvent
+	err = json.Unmarshal(body, &responseStruct)
+	if err != nil {
+		logger.Error("Occurred error when try unmarshal body", err)
+		utils.SendError(ctx, http.StatusBadGateway, "Ocorreu um problema ao processar a resposta do servidor")
+		return nil, &messageError
+	}
+
+	return &responseStruct, nil
 }
