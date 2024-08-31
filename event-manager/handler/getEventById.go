@@ -23,7 +23,6 @@ func GetEventById(ctx *gin.Context) {
 	defer cancel()
 
 	event := eventsRepository.FindById(id, ctxMongo)
-	fmt.Print(event)
 	if event == nil {
 		logger.Error("Event not found", nil)
 		utils.SendError(ctx, http.StatusNotFound, fmt.Sprintf("Evento com o id %s não existe", id))

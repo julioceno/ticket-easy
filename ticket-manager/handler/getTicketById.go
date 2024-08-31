@@ -10,6 +10,7 @@ import (
 	"github.com/julioceno/ticket-easy/ticket-manager/utils"
 )
 
+// TODO: so pegar o ticket se pertencer ao usuario que for especificado
 func GetTicketById(ctx *gin.Context) {
 	id, err := utils.GetIdParam(ctx)
 	if err != nil {
@@ -29,5 +30,5 @@ func GetTicketById(ctx *gin.Context) {
 	}
 
 	response := ticket.ToResponse()
-	utils.SendSuccess(utils.SendSuccesStruct{ctx, "POST", response, nil})
+	utils.SendSuccess(utils.SendSuccesStruct{ctx, "GET", response, nil})
 }
