@@ -46,6 +46,7 @@ func CreateTicket(ctx *gin.Context) {
 	if err != nil {
 		logger.Error("Ocurred error when try create ticket", err)
 		utils.SendError(ctx, http.StatusBadRequest, "Ocorreu um erro ao tentar criar o ticket")
+		return
 	}
 
 	response := ticketCreated.ToResponse()

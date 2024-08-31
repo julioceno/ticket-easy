@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,10 +12,10 @@ import (
 )
 
 func GetEventById(ctx *gin.Context) {
-	id := ctx.Param("id")
-	if strings.TrimSpace(id) == "" {
-		logger.Error("Occured error when get id", nil)
-		utils.SendError(ctx, http.StatusBadRequest, "Ocorreu um erro ao obter o id enviado")
+	id, err := utils.GetIdParam(ctx)
+	if err != nil {
+		logger.Error("Id not exists", err)
+		utils.SendError(ctx, http.StatusBadRequest, "Id não foi especificado")
 		return
 	}
 

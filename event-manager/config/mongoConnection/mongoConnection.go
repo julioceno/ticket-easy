@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/julioceno/ticket-easy/event-manager/config/logger"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,6 +15,10 @@ var (
 )
 
 func init() {
+	if err := godotenv.Load(); err != nil {
+		logger.Fatal("Error loading .env file", err)
+	}
+
 	dbUrl := os.Getenv("DATABASE_URL")
 	if dbUrl == "" {
 		logger.Fatal("Database url not exists", nil)

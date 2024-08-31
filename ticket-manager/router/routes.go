@@ -9,4 +9,5 @@ func initializeRoutes(routes *gin.Engine) {
 	ticketRoutes := routes.Group("tickets")
 
 	ticketRoutes.POST("/", handler.CreateTicket)
+	ticketRoutes.POST("/:id", handler.GetTicketById)
 }

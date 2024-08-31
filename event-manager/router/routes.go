@@ -10,4 +10,5 @@ func initializeRoutes(routes *gin.Engine) {
 
 	eventsRoutes.GET("/", handler.GetEvents)
 	eventsRoutes.GET("/:id", handler.GetEventById)
+	eventsRoutes.GET("/:id/reduce-ticket", handler.GetEventById)
 }
