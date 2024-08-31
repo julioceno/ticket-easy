@@ -5,7 +5,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/julioceno/ticket-easy/ticket-manager/config/logger"
 	"github.com/julioceno/ticket-easy/ticket-manager/config/mongoConnection"
 	"github.com/julioceno/ticket-easy/ticket-manager/schemas"
@@ -25,7 +24,7 @@ func NewTicketRepository() *TicketsRepository {
 }
 
 func (r *TicketsRepository) FindById(id string, ctxMongo context.Context) *schemas.Ticket {
-	objId, err := primitive.ObjectIDFromHex(id)
+	objId, err := _convertToObjectId(id)
 	if err != nil {
 		return nil
 	}
@@ -40,7 +39,7 @@ func (r *TicketsRepository) FindById(id string, ctxMongo context.Context) *schem
 	return &ticket
 }
 
-func (r *TicketsRepository) Create(ctx *gin.Context, ctxMongo context.Context, ticket *schemas.Ticket) (*schemas.Ticket, error) {
+func (r *TicketsRepository) Create(ctxMongo context.Context, ticket *schemas.Ticket) (*schemas.Ticket, error) {
 	now := time.Now()
 	ticket.CreatedAt = now
 	ticket.UpdatedAt = now
@@ -54,7 +53,7 @@ func (r *TicketsRepository) Create(ctx *gin.Context, ctxMongo context.Context, t
 	id := documentCreated.InsertedID.(primitive.ObjectID).Hex()
 	document := r.FindById(id, ctxMongo)
 	if document == nil {
-		errorCreated := errors.New("Document not exists")
+		errorCreated := errors.New("document not exists")
 		logger.Error("Document not exists", errorCreated)
 		return nil, errorCreated
 	}
@@ -62,7 +61,36 @@ func (r *TicketsRepository) Create(ctx *gin.Context, ctxMongo context.Context, t
 	return document, nil
 }
 
-func (r *TicketsRepository) Update(ctx *gin.Context, ctxMongo context.Context, ticket *schemas.Ticket) {
+func (r *TicketsRepository) Update(id string, ctxMongo context.Context, ticket *schemas.Ticket) (*schemas.Ticket, error) {
+	currentTicket := r.FindById(id, ctxMongo)
+	if currentTicket == nil {
+		errorCreated := errors.New("ticket not exists")
+		logger.Error("Ticket not exists", errorCreated)
+
+		return nil, errorCreated
+	}
+
 	ticket.UpdatedAt = time.Now()
-	// TODO: criar trava pra nao atualizar o createdAt
+	ticket.CreatedAt = currentTicket.CreatedAt
+	update := bson.M{
+		"$set": ticket,
+	}
+
+	_, err := r.collection.UpdateByID(ctxMongo, currentTicket.Id, update)
+	if err != nil {
+		logger.Error("Ocurred error when update document", err)
+		return nil, err
+	}
+
+	documentUpdated := r.FindById(id, ctxMongo)
+	return documentUpdated, nil
+}
+
+func _convertToObjectId(id string) (*primitive.ObjectID, error) {
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &objId, nil
 }

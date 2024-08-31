@@ -5,16 +5,11 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/julioceno/ticket-easy/event-manager/config/logger"
 	"github.com/julioceno/ticket-easy/event-manager/utils"
 )
 
 func apiKeyMiddleware() gin.HandlerFunc {
-	if err := godotenv.Load(); err != nil {
-		logger.Fatal("Error loading .env file", err)
-	}
-
 	apikey := os.Getenv("API_KEY")
 	if apikey == "" {
 		logger.Fatal("Api key is not valid", nil)
