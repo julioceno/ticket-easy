@@ -23,7 +23,7 @@ func ReduceTicket(ctx *gin.Context) {
 	ctxMongo, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	event := eventsRepository.FindById(eventId, ctxMongo)
+	event := eventsRepository.FindById(&eventId, &ctxMongo)
 	if hasError := throwErrorIfNotExistsEvent(ctx, event); hasError {
 		return
 	}
@@ -33,6 +33,8 @@ func ReduceTicket(ctx *gin.Context) {
 	}
 
 	utils.SendSuccess(ctx, "POST", event)
+
+	go decreaseTicket(event)
 }
 
 func throwErrorIfNotExistsEvent(ctx *gin.Context, event *schemas.Event) bool {
