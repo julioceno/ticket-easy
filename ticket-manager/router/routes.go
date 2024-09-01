@@ -10,4 +10,5 @@ func initializeRoutes(routes *gin.Engine) {
 
 	ticketRoutes.POST("/", handler.CreateTicket)
 	ticketRoutes.GET("/:id", handler.GetTicketById)
+	ticketRoutes.PATCH("/:id", handler.ReceveIdResultReduceTicket)
 }

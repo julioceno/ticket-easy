@@ -17,7 +17,7 @@ import (
 	"github.com/julioceno/ticket-easy/ticket-manager/utils"
 )
 
-type _body struct {
+type _CreateTicketbody struct {
 	UserId  string `json:"userId" validate:"required"`
 	EventId string `json:"eventId" validate:"required"`
 }
@@ -39,7 +39,7 @@ type _responseEvent struct {
 }
 
 func CreateTicket(ctx *gin.Context) {
-	var body _body
+	var body _CreateTicketbody
 	if err := utils.DecodeBody(ctx, &body); err != nil {
 		logger.Error("Ocurred error when try decode body", err)
 		utils.SendError(ctx, http.StatusBadRequest, "Ocorreu um erro ao tentar criar o ticket")
@@ -84,7 +84,7 @@ func CreateTicket(ctx *gin.Context) {
 	utils.SendSuccess(utils.SendSuccesStruct{ctx, "POST", response, &responseStatus})
 }
 
-func createTicket(body _body) (*schemas.Ticket, error) {
+func createTicket(body _CreateTicketbody) (*schemas.Ticket, error) {
 	ticket := schemas.Ticket{
 		Status:  schemas.StatusProcessing,
 		EventId: body.EventId,
@@ -139,15 +139,6 @@ func buyTicket(ctx *gin.Context, ticket *schemas.Ticket) (*_responseEvent, *stri
 	}
 
 	return &responseStruct, nil
-}
-
-func updateEventError(ctxMongo *context.Context, messageError *string, ticket *schemas.Ticket) {
-	// TODO: salvar mensagens de erro mais concretas. Por exemplo, quando os ingressos de esgotarem, retornar uma mensagem dizendo que os ingressos esgotaram
-	ticket.MessageError = *messageError
-	ticket.Status = schemas.StatusError
-
-	id := ticket.Id.Hex()
-	ticketsRepository.Update(&id, ctxMongo, ticket)
 }
 
 func updateEventInfo(ctxMongo *context.Context, responseEvent *_responseEvent, ticket *schemas.Ticket) {
