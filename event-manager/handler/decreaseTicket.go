@@ -49,9 +49,9 @@ func updateEventDecreaseTicket(event *schemas.Event) *string {
 func notifyTicketManager(ticketId *string, message *string) bool {
 	eventUrl := os.Getenv("TICKET_URL")
 	apiKey := os.Getenv("TICKET_API_KEY")
-	url := fmt.Sprintf("%s/events/%s", eventUrl, *ticketId)
+	url := fmt.Sprintf("%s/tickets/%s", eventUrl, *ticketId)
 
-	body := map[string]string{"message": ""}
+	body := map[string]string{"messageError": buildMessage(message)}
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
 		logger.Error("Occurred error in marshal message to JSON", err)
@@ -78,4 +78,12 @@ func notifyTicketManager(ticketId *string, message *string) bool {
 	}
 
 	return false
+}
+
+func buildMessage(message *string) string {
+	if message == nil {
+		return ""
+	}
+
+	return *message
 }
