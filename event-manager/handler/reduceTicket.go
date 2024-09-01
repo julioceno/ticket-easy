@@ -12,18 +12,20 @@ import (
 	"github.com/julioceno/ticket-easy/event-manager/utils"
 )
 
+type reduceTicketBody struct {
+	TicketId string `json:"ticketId" validate:"required"`
+}
+
 func ReduceTicket(ctx *gin.Context) {
-	eventId, err := utils.GetIdParam(ctx)
-	if err != nil {
-		logger.Error("Id not exists", err)
-		utils.SendError(ctx, http.StatusBadRequest, "Id não foi especificado")
+	eventId, body, hasError := getIdAndBody(ctx)
+	if hasError {
 		return
 	}
 
 	ctxMongo, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	event := eventsRepository.FindById(&eventId, &ctxMongo)
+	event := eventsRepository.FindById(eventId, &ctxMongo)
 	if hasError := throwErrorIfNotExistsEvent(ctx, event); hasError {
 		return
 	}
@@ -33,8 +35,25 @@ func ReduceTicket(ctx *gin.Context) {
 	}
 
 	utils.SendSuccess(ctx, "POST", event)
+	go decreaseTicket(event, &body.TicketId)
+}
 
-	go decreaseTicket(event)
+func getIdAndBody(ctx *gin.Context) (*string, *reduceTicketBody, bool) {
+	eventId, err := utils.GetIdParam(ctx)
+	if err != nil {
+		logger.Error("Id not exists", err)
+		utils.SendError(ctx, http.StatusBadRequest, "Id não foi especificado")
+		return nil, nil, true
+	}
+
+	var body reduceTicketBody
+	if err := utils.DecodeBody(ctx, &body); err != nil {
+		logger.Error("Ocurred error when try decode body", err)
+		utils.SendError(ctx, http.StatusBadRequest, "Ocorreu um erro ao tentar garantir o ingresso")
+		return nil, nil, true
+	}
+
+	return &eventId, &body, false
 }
 
 func throwErrorIfNotExistsEvent(ctx *gin.Context, event *schemas.Event) bool {

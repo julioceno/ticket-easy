@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -42,7 +43,7 @@ func CreateTicket(ctx *gin.Context) {
 	var body _CreateTicketbody
 	if err := utils.DecodeBody(ctx, &body); err != nil {
 		logger.Error("Ocurred error when try decode body", err)
-		utils.SendError(ctx, http.StatusBadRequest, "Ocorreu um erro ao tentar criar o ticket")
+		utils.SendError(ctx, http.StatusBadRequest, "Ocorreu um erro ao tentar criar o ingresso")
 		return
 	}
 
@@ -56,7 +57,7 @@ func CreateTicket(ctx *gin.Context) {
 	ticket, err := createTicket(body)
 	if err != nil {
 		logger.Error("Ocurred error when format body to create ticket", err)
-		utils.SendError(ctx, http.StatusBadRequest, "Ocorreu um erro ao tentar criar o ticket")
+		utils.SendError(ctx, http.StatusBadRequest, "Ocorreu um erro ao tentar criar o ingresso")
 		return
 	}
 
@@ -66,7 +67,7 @@ func CreateTicket(ctx *gin.Context) {
 	ticketCreated, err := ticketsRepository.Create(&ctxMongo, ticket)
 	if err != nil {
 		logger.Error("Ocurred error when try create ticket", err)
-		utils.SendError(ctx, http.StatusBadRequest, "Ocorreu um erro ao tentar criar o ticket")
+		utils.SendError(ctx, http.StatusBadRequest, "Ocorreu um erro ao tentar criar o ingresso")
 		return
 	}
 
@@ -100,7 +101,14 @@ func buyTicket(ctx *gin.Context, ticket *schemas.Ticket) (*_responseEvent, *stri
 	apiKey := os.Getenv("EVENT_API_KEY")
 	url := fmt.Sprintf("%s/events/%s/reduce-ticket", eventUrl, ticket.EventId)
 
-	req, err := http.NewRequest("POST", url, nil)
+	body := map[string]string{"ticketId": ticket.Id.Hex()}
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		logger.Error("Occurred error in marshal message to JSON", err)
+		return nil, &messageError
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		logger.Error("Occurred error in build request", err)
 		return nil, &messageError
@@ -122,7 +130,7 @@ func buyTicket(ctx *gin.Context, ticket *schemas.Ticket) (*_responseEvent, *stri
 	}
 
 	defer response.Body.Close()
-	body, err := io.ReadAll(response.Body)
+	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
 		logger.Error("Occurred error when try read body", err)
 		utils.SendError(ctx, http.StatusBadGateway, messageError)
@@ -130,7 +138,7 @@ func buyTicket(ctx *gin.Context, ticket *schemas.Ticket) (*_responseEvent, *stri
 	}
 
 	var responseStruct _responseEvent
-	err = json.Unmarshal(body, &responseStruct)
+	err = json.Unmarshal(responseBody, &responseStruct)
 
 	if err != nil {
 		logger.Error("Occurred error when try unmarshal body", err)

@@ -16,14 +16,18 @@ import (
 
 var eventMutexes = &sync.Map{}
 
-func decreaseTicket(event *schemas.Event) {
-	eventId := event.Id.Hex()
+func decreaseTicket(event *schemas.Event, ticketId *string) {
+	msg := updateEventDecreaseTicket(event)
+	notifyTicketManager(ticketId, msg)
+}
 
+func updateEventDecreaseTicket(event *schemas.Event) *string {
+	eventId := event.Id.Hex()
 	mutexInterface, _ := eventMutexes.LoadOrStore(eventId, &sync.Mutex{})
 	mutex := mutexInterface.(*sync.Mutex)
 	mutex.Lock()
 
-	ctxMongo, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctxMongo, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer func() {
 		cancel()
 		mutex.Unlock()
@@ -33,47 +37,45 @@ func decreaseTicket(event *schemas.Event) {
 	currentEvent := eventsRepository.FindById(&eventId, &ctxMongo)
 	notHasTickets := currentEvent.QuantityTickets < 1
 	if notHasTickets {
-		// TODO: enviar mensagem para fila informando que nao tem mais ingressos
-		return
+		msg := "Não existe mais ingressos para esse evento"
+		return &msg
 	}
 
 	currentEvent.QuantityTickets--
 	eventsRepository.UpdateById(&eventId, &ctxMongo, currentEvent)
-
-	// TODO: enviar mensagem para fila
+	return nil
 }
 
-func notifyTicketManager(ticketId *string, message *string) {
-	eventUrl := os.Getenv("EVENT_URL")
-	apiKey := os.Getenv("EVENT_API_KEY")
+func notifyTicketManager(ticketId *string, message *string) bool {
+	eventUrl := os.Getenv("TICKET_URL")
+	apiKey := os.Getenv("TICKET_API_KEY")
 	url := fmt.Sprintf("%s/events/%s", eventUrl, *ticketId)
 
-	body := map[string]string{"message": *message}
+	body := map[string]string{"message": ""}
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
 		logger.Error("Occurred error in marshal message to JSON", err)
-		return
+		return true
 	}
 
 	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		logger.Error("Occurred error in build request", err)
-
-		return
+		return true
 	}
 
 	req.Header.Set("x-api-key", apiKey)
 	req.Header.Set("Content-Type", "application/json")
-
 	client := &http.Client{}
 	response, err := client.Do(req)
 	if err != nil {
 		logger.Error("Occurred error in call event system", err)
-		return
+		return true
 	}
 
 	if ocurredAnyError := response.StatusCode != http.StatusNoContent; ocurredAnyError {
-		return
+		return true
 	}
 
+	return false
 }
