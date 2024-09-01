@@ -19,11 +19,11 @@ type Ticket struct {
 	Status       TicketStatus       `json:"status" bson:"status"`
 	Key          string             `json:"key" bson:"key"`
 	UserId       string             `json:"userId" bson:"userId"`
-	MessageError string             `json:"messageError" bson:"messageError"`
+	MessageError string             `json:"messageError" bson:"messageError,omitempty"`
 
-	TicketPrice float64   `json:"ticketPrice" bson:"ticketPrice"`
-	DayEvent    time.Time `json:"dayEvent" bson:"dayEvent"`
-	EventName   string    `json:"eventName" bson:"eventName"`
+	TicketPrice float64   `json:"ticketPrice" bson:"ticketPrice,omitempty"`
+	DayEvent    time.Time `json:"dayEvent" bson:"dayEvent,omitempty"`
+	EventName   string    `json:"eventName" bson:"eventName,omitempty"`
 	EventId     string    `json:"eventId" bson:"eventId"`
 
 	CreatedAt time.Time `json:"createdAt" bson:"createdAt"`
@@ -47,10 +47,16 @@ type TicketResponse struct {
 
 func (t *Ticket) ToResponse() TicketResponse {
 	return TicketResponse{
-		Id:        t.Id,
-		Status:    &t.Status,
-		EventId:   &t.EventId,
-		UserId:    &t.UserId,
+		Id:           t.Id,
+		Status:       &t.Status,
+		UserId:       &t.UserId,
+		MessageError: &t.MessageError,
+
+		TicketPrice: &t.TicketPrice,
+		DayEvent:    &t.DayEvent,
+		EventName:   &t.EventName,
+		EventId:     &t.EventId,
+
 		CreatedAt: t.CreatedAt,
 		UpdatedAt: t.UpdatedAt,
 	}

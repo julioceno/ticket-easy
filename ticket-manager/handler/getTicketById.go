@@ -24,7 +24,7 @@ func GetTicketById(ctx *gin.Context) {
 	ctxMongo, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	ticket := ticketsRepository.FindById(id, ctxMongo)
+	ticket := ticketsRepository.FindById(&id, &ctxMongo)
 	if hasError := throwErrorIfNotExistsEvent(ctx, ticket); hasError {
 		return
 	}

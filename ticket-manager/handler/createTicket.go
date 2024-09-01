@@ -22,14 +22,20 @@ type _body struct {
 	EventId string `json:"eventId" validate:"required"`
 }
 
-type _responseEvent struct {
-	Id              string    `json:"_id""`
+type _eventData struct {
+	ID              string    `json:"_id"`
 	Name            string    `json:"name"`
 	Description     string    `json:"description"`
 	TicketValue     float64   `json:"ticketValue"`
 	ImagesUrl       []string  `json:"imagesUrl"`
 	QuantityTickets int       `json:"quantityTickets"`
 	OccuredAt       time.Time `json:"occuredAt"`
+}
+
+type _responseEvent struct {
+	Data    _eventData `json:"data"`
+	Message string     `json:"message"`
+	Status  int        `json:"status"`
 }
 
 func CreateTicket(ctx *gin.Context) {
@@ -57,21 +63,21 @@ func CreateTicket(ctx *gin.Context) {
 	ctxMongo, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	ticketCreated, err := ticketsRepository.Create(ctxMongo, ticket)
+	ticketCreated, err := ticketsRepository.Create(&ctxMongo, ticket)
 	if err != nil {
 		logger.Error("Ocurred error when try create ticket", err)
 		utils.SendError(ctx, http.StatusBadRequest, "Ocorreu um erro ao tentar criar o ticket")
 		return
 	}
 
-	_, messageError := buyTicket(ctx, ticketCreated)
+	responseEvent, messageError := buyTicket(ctx, ticketCreated)
 	if messageError != nil {
-		ticketCreated.MessageError = *messageError
-		ticketCreated.Status = schemas.StatusError
-		ticketsRepository.Update(ticketCreated.Id.Hex(), ctxMongo, ticketCreated)
-		utils.SendError(ctx, http.StatusBadRequest, *messageError)
+		updateEventError(&ctxMongo, messageError, ticketCreated)
+		utils.SendError(ctx, http.StatusBadGateway, *messageError)
 		return
 	}
+
+	updateEventInfo(&ctxMongo, responseEvent, ticketCreated)
 
 	response := ticketCreated.ToResponse()
 	responseStatus := http.StatusCreated
@@ -92,12 +98,11 @@ func buyTicket(ctx *gin.Context, ticket *schemas.Ticket) (*_responseEvent, *stri
 	messageError := "Ocorreu um erro ao efetuar a compra, entre em contato com nossa equipe de suporte"
 	eventUrl := os.Getenv("EVENT_URL")
 	apiKey := os.Getenv("EVENT_API_KEY")
-	url := fmt.Sprintf("%s/events/%s/reduce-ticket", eventUrl, ticket.Id.Hex())
+	url := fmt.Sprintf("%s/events/%s/reduce-ticket", eventUrl, ticket.EventId)
 
 	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {
 		logger.Error("Occurred error in build request", err)
-		utils.SendError(ctx, http.StatusBadGateway, messageError)
 		return nil, &messageError
 	}
 	req.Header.Set("x-api-key", apiKey)
@@ -107,13 +112,12 @@ func buyTicket(ctx *gin.Context, ticket *schemas.Ticket) (*_responseEvent, *stri
 	response, err := client.Do(req)
 	if err != nil {
 		logger.Error("Occurred error in call event system", err)
-		utils.SendError(ctx, http.StatusBadGateway, messageError)
 		return nil, &messageError
 	}
 
 	if response.StatusCode != http.StatusOK {
-		err := errors.New("Request is fail")
-		logger.Error("Request can not process this data", err)
+		err := errors.New("request is fail")
+		logger.Error(fmt.Sprintf("request can not process, status code %v", response.StatusCode), err)
 		return nil, &messageError
 	}
 
@@ -127,6 +131,7 @@ func buyTicket(ctx *gin.Context, ticket *schemas.Ticket) (*_responseEvent, *stri
 
 	var responseStruct _responseEvent
 	err = json.Unmarshal(body, &responseStruct)
+
 	if err != nil {
 		logger.Error("Occurred error when try unmarshal body", err)
 		utils.SendError(ctx, http.StatusBadGateway, "Ocorreu um problema ao processar a resposta do servidor")
@@ -134,4 +139,21 @@ func buyTicket(ctx *gin.Context, ticket *schemas.Ticket) (*_responseEvent, *stri
 	}
 
 	return &responseStruct, nil
+}
+
+func updateEventError(ctxMongo *context.Context, messageError *string, ticket *schemas.Ticket) {
+	ticket.MessageError = *messageError
+	ticket.Status = schemas.StatusError
+
+	id := ticket.Id.Hex()
+	ticketsRepository.Update(&id, ctxMongo, ticket)
+}
+
+func updateEventInfo(ctxMongo *context.Context, responseEvent *_responseEvent, ticket *schemas.Ticket) {
+	ticket.TicketPrice = responseEvent.Data.TicketValue
+	ticket.EventName = responseEvent.Data.Name
+	ticket.DayEvent = responseEvent.Data.OccuredAt
+
+	id := ticket.Id.Hex()
+	ticketsRepository.Update(&id, ctxMongo, ticket)
 }

@@ -23,35 +23,34 @@ func NewTicketRepository() *TicketsRepository {
 	}
 }
 
-func (r *TicketsRepository) FindById(id string, ctxMongo context.Context) *schemas.Ticket {
+func (r *TicketsRepository) FindById(id *string, ctxMongo *context.Context) *schemas.Ticket {
 	objId, err := _convertToObjectId(id)
 	if err != nil {
 		return nil
 	}
 
 	var ticket schemas.Ticket
-	document := r.collection.FindOne(ctxMongo, bson.M{"_id": objId})
-	err = document.Decode(&ticket)
-	if err != nil {
+	document := r.collection.FindOne(*ctxMongo, bson.M{"_id": objId})
+	if err = document.Decode(&ticket); err != nil {
 		return nil
 	}
 
 	return &ticket
 }
 
-func (r *TicketsRepository) Create(ctxMongo context.Context, ticket *schemas.Ticket) (*schemas.Ticket, error) {
+func (r *TicketsRepository) Create(ctxMongo *context.Context, ticket *schemas.Ticket) (*schemas.Ticket, error) {
 	now := time.Now()
 	ticket.CreatedAt = now
 	ticket.UpdatedAt = now
 
-	documentCreated, err := r.collection.InsertOne(ctxMongo, ticket)
+	documentCreated, err := r.collection.InsertOne(*ctxMongo, ticket)
 	if err != nil {
 		logger.Error("Occured error when create document", err)
 		return nil, err
 	}
 
 	id := documentCreated.InsertedID.(primitive.ObjectID).Hex()
-	document := r.FindById(id, ctxMongo)
+	document := r.FindById(&id, ctxMongo)
 	if document == nil {
 		errorCreated := errors.New("document not exists")
 		logger.Error("Document not exists", errorCreated)
@@ -61,12 +60,11 @@ func (r *TicketsRepository) Create(ctxMongo context.Context, ticket *schemas.Tic
 	return document, nil
 }
 
-func (r *TicketsRepository) Update(id string, ctxMongo context.Context, ticket *schemas.Ticket) (*schemas.Ticket, error) {
+func (r *TicketsRepository) Update(id *string, ctxMongo *context.Context, ticket *schemas.Ticket) (*schemas.Ticket, error) {
 	currentTicket := r.FindById(id, ctxMongo)
 	if currentTicket == nil {
-		errorCreated := errors.New("ticket not exists")
-		logger.Error("Ticket not exists", errorCreated)
-
+		errorCreated := errors.New("document not exists")
+		logger.Error("Document not exists", errorCreated)
 		return nil, errorCreated
 	}
 
@@ -76,7 +74,7 @@ func (r *TicketsRepository) Update(id string, ctxMongo context.Context, ticket *
 		"$set": ticket,
 	}
 
-	_, err := r.collection.UpdateByID(ctxMongo, currentTicket.Id, update)
+	_, err := r.collection.UpdateByID(*ctxMongo, currentTicket.Id, update)
 	if err != nil {
 		logger.Error("Ocurred error when update document", err)
 		return nil, err
@@ -86,8 +84,8 @@ func (r *TicketsRepository) Update(id string, ctxMongo context.Context, ticket *
 	return documentUpdated, nil
 }
 
-func _convertToObjectId(id string) (*primitive.ObjectID, error) {
-	objId, err := primitive.ObjectIDFromHex(id)
+func _convertToObjectId(id *string) (*primitive.ObjectID, error) {
+	objId, err := primitive.ObjectIDFromHex(*id)
 	if err != nil {
 		return nil, err
 	}
