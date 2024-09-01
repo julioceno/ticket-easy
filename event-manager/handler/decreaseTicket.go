@@ -51,7 +51,11 @@ func notifyTicketManager(ticketId *string, message *string) bool {
 	apiKey := os.Getenv("TICKET_API_KEY")
 	url := fmt.Sprintf("%s/tickets/%s", eventUrl, *ticketId)
 
-	body := map[string]string{"messageError": buildMessage(message)}
+	type _body struct {
+		MessageError *string `json:"messageError,omitempty"`
+	}
+	body := _body{MessageError: message}
+
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
 		logger.Error("Occurred error in marshal message to JSON", err)
@@ -78,12 +82,4 @@ func notifyTicketManager(ticketId *string, message *string) bool {
 	}
 
 	return false
-}
-
-func buildMessage(message *string) string {
-	if message == nil {
-		return ""
-	}
-
-	return *message
 }

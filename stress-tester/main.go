@@ -23,7 +23,7 @@ func main() {
 
 func createRequest(index int) {
 	var jsonStr = []byte(`{
-			"eventId": "66d37f915deb0915f95b3552",
+			"eventId": "66d37f915deb0915f95b3551",
 			"userId": "66d37ec1e08c07d3f15dee4c"
 		}`)
 
