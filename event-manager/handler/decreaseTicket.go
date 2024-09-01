@@ -25,7 +25,8 @@ func decreaseTicket(event *schemas.Event) {
 	}()
 
 	currentEvent := eventsRepository.FindById(&eventId, &ctxMongo)
-	if currentEvent.QuantityTickets <= 0 {
+	notHasTickets := currentEvent.QuantityTickets < 1
+	if notHasTickets {
 		// TODO: enviar mensagem para fila informando que nao tem mais ingressos
 		return
 	}

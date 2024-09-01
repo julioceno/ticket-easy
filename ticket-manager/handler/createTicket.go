@@ -142,6 +142,7 @@ func buyTicket(ctx *gin.Context, ticket *schemas.Ticket) (*_responseEvent, *stri
 }
 
 func updateEventError(ctxMongo *context.Context, messageError *string, ticket *schemas.Ticket) {
+	// TODO: salvar mensagens de erro mais concretas. Por exemplo, quando os ingressos de esgotarem, retornar uma mensagem dizendo que os ingressos esgotaram
 	ticket.MessageError = *messageError
 	ticket.Status = schemas.StatusError
 

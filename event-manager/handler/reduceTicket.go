@@ -20,7 +20,7 @@ func ReduceTicket(ctx *gin.Context) {
 		return
 	}
 
-	ctxMongo, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctxMongo, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	event := eventsRepository.FindById(&eventId, &ctxMongo)
@@ -50,7 +50,7 @@ func throwErrorIfNotExistsEvent(ctx *gin.Context, event *schemas.Event) bool {
 }
 
 func throwErrorIfNotExistsMoreTickets(ctx *gin.Context, event *schemas.Event) bool {
-	if existsTickets := event.QuantityTickets > 1; existsTickets {
+	if existsTickets := event.QuantityTickets > 0; existsTickets {
 		return false
 	}
 
