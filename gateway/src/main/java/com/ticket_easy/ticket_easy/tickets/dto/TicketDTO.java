@@ -15,9 +15,10 @@ public class TicketDTO {
     @JsonAlias("_id")
     private String id;
     private String userId;
+    private String status;
     private String messageError;
     private String ticketPrice;
-    private String dayEvent;
+    private Date dayEvent;
     private String eventName;
     private Date createdAt;
     private Date updatedAt;

@@ -8,7 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-public class RequestTicketDTO {
-    private String userId;
+public class CreateTicketDTO {
     private String eventId;
 }

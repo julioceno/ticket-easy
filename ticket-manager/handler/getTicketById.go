@@ -11,18 +11,20 @@ import (
 	"github.com/julioceno/ticket-easy/ticket-manager/config/logger"
 	"github.com/julioceno/ticket-easy/ticket-manager/schemas"
 	"github.com/julioceno/ticket-easy/ticket-manager/utils"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // TODO: so pegar o ticket se pertencer ao usuario que for especificado
 func GetTicketById(ctx *gin.Context) {
-	id, _, hasError := getIdAndUserId(ctx)
+	id, userId, hasError := getIdAndUserId(ctx)
 	if hasError {
 		return
 	}
 	ctxMongo, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	ticket := ticketsRepository.FindById(id, &ctxMongo)
+	filters := bson.M{"userId": userId}
+	ticket := ticketsRepository.FindById(id, &ctxMongo, filters)
 	if hasError := throwErrorIfNotExistsEvent(ctx, ticket); hasError {
 		return
 	}

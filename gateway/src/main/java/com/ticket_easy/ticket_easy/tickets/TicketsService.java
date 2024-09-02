@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ticket_easy.ticket_easy.common.validations.IntegrationErrorMap;
 import com.ticket_easy.ticket_easy.exceptions.BadRequestException;
 import com.ticket_easy.ticket_easy.exceptions.InternalServerErrorException;
-import com.ticket_easy.ticket_easy.tickets.dto.RequestTicketDTO;
+import com.ticket_easy.ticket_easy.tickets.dto.CreateTicketDTO;
+import com.ticket_easy.ticket_easy.tickets.dto.CreateTicketToSendMicrosserviceDTO;
 import com.ticket_easy.ticket_easy.tickets.dto.ResponseTicketDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class TicketsService {
@@ -28,37 +30,35 @@ public class TicketsService {
     @Value("${api.integrations.tickets.secret}")
     private String secret;
 
-    public ResponseTicketDTO create(RequestTicketDTO dto) {
+    public ResponseTicketDTO create(CreateTicketToSendMicrosserviceDTO dto) {
         try {
             HttpEntity<String> httpEntity = createHttpEntity(dto);
             RestTemplate restTemplate = new RestTemplate();
 
-            ResponseEntity<ResponseTicketDTO> response = restTemplate.exchange(
+            return restTemplate.postForEntity(
                     getUrl(),
-                    HttpMethod.POST,
                     httpEntity,
-                    ResponseTicketDTO.class,
-                    dto);
-
-            return response.getBody();
+                    ResponseTicketDTO.class
+            ).getBody();
         } catch (HttpClientErrorException err) {
             IntegrationErrorMap.validation(err);
             throw new InternalServerErrorException();
         }
     }
 
-    public ResponseTicketDTO findById(String id) {
+    public ResponseTicketDTO findById(String id, String userId) {
         try {
             HttpEntity<String> httpEntity = createHttpEntity(null);
             RestTemplate restTemplate = new RestTemplate();
 
-            String urlWithId = getUrl() + "/{id}";
+            UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(getUrl() + id);
+            urlBuilder.queryParam("userId", userId);
+
             ResponseEntity<ResponseTicketDTO> response = restTemplate.exchange(
-                    urlWithId,
+                    urlBuilder.toUriString(),
                     HttpMethod.GET,
                     httpEntity,
-                    ResponseTicketDTO.class,
-                    id);
+                    ResponseTicketDTO.class);
 
             return response.getBody();
         } catch (HttpClientErrorException err) {
@@ -68,7 +68,7 @@ public class TicketsService {
     }
 
     private String getUrl() {
-        return ticketsUrl + "/tickets";
+        return ticketsUrl + "/tickets/";
     }
 
     private HttpEntity<String> createHttpEntity(Object dto) {
