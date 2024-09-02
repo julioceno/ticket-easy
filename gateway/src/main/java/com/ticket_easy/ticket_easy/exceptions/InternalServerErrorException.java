@@ -4,4 +4,8 @@ public class InternalServerErrorException extends RuntimeException {
     public InternalServerErrorException(String msg) {
         super(msg);
     }
+
+    public InternalServerErrorException() {
+        super("Ocorreu um erro deconhecido");
+    }
 }

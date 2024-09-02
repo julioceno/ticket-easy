@@ -15,6 +15,9 @@ api:
     token:
       secret: ${JWT_SECRET:secret}}
   integrations:
-      event:
+      events:
         url: http://localhost:8081
+        secret: secret
+      tickets:
+        url: http://localhost:8082
         secret: secret

@@ -19,10 +19,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class EventService {
     private static final Logger logger = LoggerFactory.getLogger(EventService.class.getName());
 
-    @Value("${api.integrations.event.url}")
+    @Value("${api.integrations.events.url}")
     private String eventUrl;
 
-    @Value("${api.integrations.event.secret}")
+    @Value("${api.integrations.events.secret}")
     private String secret;
 
     public ResponseEventsListDTO fetchEvents(QueryEventsDTO query) {

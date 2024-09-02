@@ -23,14 +23,20 @@ func NewTicketRepository() *TicketsRepository {
 	}
 }
 
-func (r *TicketsRepository) FindById(id *string, ctxMongo *context.Context) *schemas.Ticket {
+func (r *TicketsRepository) FindById(id *string, ctxMongo *context.Context, additionalFilters ...bson.M) *schemas.Ticket {
 	objId, err := _convertToObjectId(id)
 	if err != nil {
 		return nil
 	}
+	filter := bson.M{"_id": objId}
+	if len(additionalFilters) > 0 {
+		for key, value := range additionalFilters[0] {
+			filter[key] = value
+		}
+	}
 
 	var ticket schemas.Ticket
-	document := r.collection.FindOne(*ctxMongo, bson.M{"_id": objId})
+	document := r.collection.FindOne(*ctxMongo, filter)
 	if err = document.Decode(&ticket); err != nil {
 		return nil
 	}

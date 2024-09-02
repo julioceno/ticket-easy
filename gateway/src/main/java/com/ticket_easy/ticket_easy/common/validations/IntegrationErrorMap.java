@@ -12,7 +12,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 
 public class IntegrationErrorMap {
-    public static void validation(HttpClientErrorException response) {
+    public static void validation(HttpClientErrorException  response) {
         try {
             int status = response.getStatusCode().value();
             String err = response.getResponseBodyAsString();
