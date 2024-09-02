@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/julioceno/ticket-easy/event-manager/config/logger"
+	"github.com/julioceno/ticket-easy/apps/event-manager/config/logger"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

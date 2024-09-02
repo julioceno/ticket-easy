@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/julioceno/ticket-easy/event-manager/config/logger"
+	"github.com/julioceno/ticket-easy/apps/event-manager/config/logger"
 )
 
 func Initialize() {

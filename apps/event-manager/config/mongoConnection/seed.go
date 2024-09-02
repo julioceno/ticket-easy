@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/julioceno/ticket-easy/event-manager/config/logger"
-	"github.com/julioceno/ticket-easy/event-manager/schemas"
+	"github.com/julioceno/ticket-easy/apps/event-manager/config/logger"
+	"github.com/julioceno/ticket-easy/apps/event-manager/schemas"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )

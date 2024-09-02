@@ -6,9 +6,9 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/julioceno/ticket-easy/event-manager/config/logger"
-	"github.com/julioceno/ticket-easy/event-manager/config/mongoConnection"
-	"github.com/julioceno/ticket-easy/event-manager/schemas"
+	"github.com/julioceno/ticket-easy/apps/event-manager/config/logger"
+	"github.com/julioceno/ticket-easy/apps/event-manager/config/mongoConnection"
+	"github.com/julioceno/ticket-easy/apps/event-manager/schemas"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

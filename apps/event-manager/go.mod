@@ -1,4 +1,4 @@
-module github.com/julioceno/ticket-easy/event-manager
+module github.com/julioceno/ticket-easy/apps/event-manager
 
 go 1.22.5
 

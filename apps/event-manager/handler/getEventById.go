@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/julioceno/ticket-easy/event-manager/config/logger"
-	"github.com/julioceno/ticket-easy/event-manager/utils"
+	"github.com/julioceno/ticket-easy/apps/event-manager/config/logger"
+	"github.com/julioceno/ticket-easy/apps/event-manager/utils"
 )
 
 func GetEventById(ctx *gin.Context) {
