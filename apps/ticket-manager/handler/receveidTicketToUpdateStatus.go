@@ -8,13 +8,13 @@ import (
 	"github.com/julioceno/ticket-easy/apps/ticket-manager/utils"
 )
 
-func ReceveIdResultReduceTicket(ctx *gin.Context) {
+func ReceveidTicketToUpdateStatus(ctx *gin.Context) {
 	id, body, hasError := getIdAndBody(ctx)
 	if hasError {
 		return
 	}
 
-	if msgError := decreaseTicket(id, body); msgError != nil {
+	if msgError := updateStatusTicket(id, body); msgError != nil {
 		utils.SendError(ctx, http.StatusNotFound, *msgError)
 		return
 	}
@@ -23,7 +23,7 @@ func ReceveIdResultReduceTicket(ctx *gin.Context) {
 	utils.SendSuccess(utils.SendSuccesStruct{ctx, "PATCH", nil, &responseStatus})
 }
 
-func getIdAndBody(ctx *gin.Context) (*string, *_decreaseTicketBody, bool) {
+func getIdAndBody(ctx *gin.Context) (*string, *_updateStatusTicket, bool) {
 	id, err := utils.GetIdParam(ctx)
 	if err != nil {
 		logger.Error("Ocurred error when get id", err)
@@ -36,7 +36,7 @@ func getIdAndBody(ctx *gin.Context) (*string, *_decreaseTicketBody, bool) {
 		return &id, nil, false
 	}
 
-	var body _decreaseTicketBody
+	var body _updateStatusTicket
 	if err := utils.DecodeBody(ctx, &body); err != nil {
 		logger.Error("Ocurred error when try decode body", err)
 		utils.SendError(ctx, http.StatusBadRequest, "Ocorreu um erro ao tentar criar o ticket")
