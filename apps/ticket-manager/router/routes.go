@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/julioceno/ticket-easy/ticket-manager/handler"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/handler"
 )
 
 func initializeRoutes(routes *gin.Engine) {

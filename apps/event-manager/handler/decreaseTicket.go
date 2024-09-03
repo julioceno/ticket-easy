@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/julioceno/ticket-easy/apps/event-manager/config/logger"
+	"github.com/julioceno/ticket-easy/apps/event-manager/handler/queue"
 	"github.com/julioceno/ticket-easy/apps/event-manager/schemas"
 )
 
@@ -18,7 +19,11 @@ var eventMutexes = &sync.Map{}
 
 func decreaseTicket(event *schemas.Event, ticketId *string) {
 	msg := updateEventDecreaseTicket(event)
-	notifyTicketManager(ticketId, msg)
+	ocurredError := sentNotifyHttp(ticketId, msg)
+	if !ocurredError {
+		return
+	}
+	sendMessageQueue(ticketId, msg)
 }
 
 func updateEventDecreaseTicket(event *schemas.Event) *string {
@@ -46,7 +51,7 @@ func updateEventDecreaseTicket(event *schemas.Event) *string {
 	return nil
 }
 
-func notifyTicketManager(ticketId *string, message *string) bool {
+func sentNotifyHttp(ticketId *string, message *string) bool {
 	eventUrl := os.Getenv("TICKET_URL")
 	apiKey := os.Getenv("TICKET_API_KEY")
 	url := fmt.Sprintf("%s/tickets/%s", eventUrl, *ticketId)
@@ -82,4 +87,22 @@ func notifyTicketManager(ticketId *string, message *string) bool {
 	}
 
 	return false
+}
+
+func sendMessageQueue(ticketId *string, message *string) {
+	type _body struct {
+		MessageError *string `json:"messageError,omitempty"`
+		TicketId     *string `json:"ticketId"`
+	}
+	body := _body{TicketId: ticketId, MessageError: message}
+
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		logger.Error("Occurred error in marshal message to JSON", err)
+		return
+	}
+
+	if err := queue.SendMessage(string(jsonBody)); err != nil {
+		logger.Error("Ocurred error when try send message to queue", err)
+	}
 }

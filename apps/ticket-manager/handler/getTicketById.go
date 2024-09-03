@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/julioceno/ticket-easy/ticket-manager/config/logger"
-	"github.com/julioceno/ticket-easy/ticket-manager/schemas"
-	"github.com/julioceno/ticket-easy/ticket-manager/utils"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/config/logger"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/schemas"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/utils"
 	"go.mongodb.org/mongo-driver/bson"
 )
 

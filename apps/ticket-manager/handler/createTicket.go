@@ -13,9 +13,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/julioceno/ticket-easy/ticket-manager/config/logger"
-	"github.com/julioceno/ticket-easy/ticket-manager/schemas"
-	"github.com/julioceno/ticket-easy/ticket-manager/utils"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/config/logger"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/schemas"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/utils"
 )
 
 type _CreateTicketbody struct {

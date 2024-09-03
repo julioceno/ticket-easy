@@ -15,7 +15,6 @@ create_queue() {
     awslocal sqs create-queue --queue-name ${QUEUE_NAME_TO_CREATE}
 }
 
-create_queue "queue1"
-create_queue "queue2"
+create_queue "reduce-ticket"
 
 echo "finished"

@@ -24,6 +24,7 @@ services:
       - "127.0.0.1:4566:4566"          
       - "127.0.0.1:4510-4559:4510-4559" 
     environment:
+      - SERVICES=sqs
       - DEBUG=-0
     volumes:
       - ./scripts/localstack:/etc/localstack/init/ready.d

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/julioceno/ticket-easy/ticket-manager/config/logger"
-	"github.com/julioceno/ticket-easy/ticket-manager/config/mongoConnection"
-	"github.com/julioceno/ticket-easy/ticket-manager/schemas"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/config/logger"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/config/mongoConnection"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/schemas"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 
-	"github.com/julioceno/ticket-easy/ticket-manager/schemas"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/schemas"
 )
 
 func updateEventError(ctxMongo *context.Context, messageError *string, ticket *schemas.Ticket) {
