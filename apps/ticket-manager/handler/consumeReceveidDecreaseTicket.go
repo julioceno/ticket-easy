@@ -10,6 +10,11 @@ import (
 	"github.com/julioceno/ticket-easy/apps/ticket-manager/handler/queue"
 )
 
+type ticketAction struct {
+	TicketId     *string `json:"ticketId"`
+	MessageError *string `json:"messageError"`
+}
+
 func startConsumerDecreaseTicket() {
 	for {
 		msgResult, err := queue.ReceveidMessage()
@@ -23,13 +28,9 @@ func startConsumerDecreaseTicket() {
 	}
 }
 
-type ticketAction struct {
-	TicketId     *string `json:"ticketId"`
-	MessageError *string `json:"messageError"`
-}
-
 func consumeReceveidDecreaseTicket(msgResult *sqs.ReceiveMessageOutput) {
 	messages := msgResult.Messages
+	logger.Info(fmt.Sprintf("consuming %v messages", len(messages)))
 	for _, msg := range messages {
 		var result ticketAction
 
@@ -42,8 +43,6 @@ func consumeReceveidDecreaseTicket(msgResult *sqs.ReceiveMessageOutput) {
 			}
 			continue
 		}
-
-		fmt.Println("consumindo mensagem" + *msg.Body)
 
 		if err := queue.DeleteMessage(msg.ReceiptHandle); err != nil {
 			logger.Error("Ocurred errro when try delete message queue", err)
