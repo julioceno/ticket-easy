@@ -104,7 +104,7 @@ func buyTicket(ctx *gin.Context, ticket *schemas.Ticket) (*_responseEvent, *stri
 	body := map[string]string{"ticketId": ticket.Id.Hex()}
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
-		logger.Error("Occurred error in marshal message to JSON", err)
+		logger.Error("Occurred error when convert message to JSON", err)
 		return nil, &messageError
 	}
 

@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/julioceno/ticket-easy/apps/event-manager/config/logger"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/config/logger"
 )
 
 type Envs struct {

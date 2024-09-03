@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/julioceno/ticket-easy/apps/event-manager/config/logger"
-	"github.com/julioceno/ticket-easy/apps/event-manager/utils"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/config/logger"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/utils"
 )
 
 func apiKeyMiddleware() gin.HandlerFunc {

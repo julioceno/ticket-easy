@@ -8,4 +8,5 @@ var (
 
 func init() {
 	ticketsRepository = repository.NewTicketRepository()
+	go startConsumerDecreaseTicket()
 }
