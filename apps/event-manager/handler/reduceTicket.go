@@ -34,7 +34,7 @@ func ReduceTicket(ctx *gin.Context) {
 		return
 	}
 
-	utils.SendSuccess(ctx, "POST", event)
+	utils.SendSuccess(utils.SendSuccesStruct{ctx, "POST", event, nil})
 	go decreaseTicket(event, &body.TicketId)
 }
 

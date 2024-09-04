@@ -11,4 +11,5 @@ func initializeRoutes(routes *gin.Engine) {
 	eventsRoutes.GET("/", handler.GetEvents)
 	eventsRoutes.GET("/:id", handler.GetEventById)
 	eventsRoutes.POST("/:id/reduce-ticket", handler.ReduceTicket)
+	eventsRoutes.PATCH("/:id/rollback-ticket", handler.ReceveidEventToRollbackTicket)
 }

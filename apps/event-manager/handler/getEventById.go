@@ -29,5 +29,5 @@ func GetEventById(ctx *gin.Context) {
 		return
 	}
 
-	utils.SendSuccess(ctx, "GET", event)
+	utils.SendSuccess(utils.SendSuccesStruct{ctx, "GET", event, nil})
 }

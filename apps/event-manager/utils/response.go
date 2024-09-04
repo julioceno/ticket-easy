@@ -12,12 +12,24 @@ type ResponseFormat struct {
 	Data  interface{} `json:"data"`
 }
 
-func SendSuccess(ctx *gin.Context, op string, data interface{}) {
-	ctx.Header("Content-type", "application/json")
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": fmt.Sprintf("operation from handler: %s successfull", op),
-		"data":    data,
-		"status":  200,
+type SendSuccesStruct struct {
+	Ctx    *gin.Context
+	Op     string
+	Data   interface{}
+	Status *int
+}
+
+func SendSuccess(params SendSuccesStruct) {
+	if params.Status == nil {
+		defaultStatus := http.StatusOK
+		params.Status = &defaultStatus
+	}
+
+	params.Ctx.Header("Content-type", "application/json")
+	params.Ctx.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("operation from handler: %s successfull", params.Op),
+		"data":    params.Data,
+		"status":  params.Status,
 	})
 }
 

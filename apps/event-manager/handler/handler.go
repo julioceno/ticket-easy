@@ -8,4 +8,5 @@ var (
 
 func init() {
 	eventsRepository = repository.NewEventRepository()
+	go startConsumerRollbackTicket()
 }

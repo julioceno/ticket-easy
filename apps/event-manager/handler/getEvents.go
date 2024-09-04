@@ -27,5 +27,5 @@ func GetEvents(ctx *gin.Context) {
 		return
 	}
 
-	utils.SendSuccess(ctx, "GET", utils.ResponseFormat{Count: count, Data: events})
+	utils.SendSuccess(utils.SendSuccesStruct{ctx, "GET", utils.ResponseFormat{Count: count, Data: events}, nil})
 }
