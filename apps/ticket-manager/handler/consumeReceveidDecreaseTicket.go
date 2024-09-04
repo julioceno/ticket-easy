@@ -29,13 +29,12 @@ func startConsumerDecreaseTicket() {
 }
 
 func consumeReceveidDecreaseTicket(msgResult *sqs.ReceiveMessageOutput) {
-	messages := msgResult.Messages
-	logger.Info(fmt.Sprintf("consuming %v messages", len(messages)))
-	for _, msg := range messages {
+	for _, msg := range msgResult.Messages {
 		var result ticketAction
 
 		if err := json.Unmarshal([]byte(*msg.Body), &result); err != nil {
-			fmt.Println("Erro na mensagem:", *msg.Body)
+			// TODO: traduzir pra ingles
+			fmt.Println("Message:", *msg.Body)
 			if e, ok := err.(*json.SyntaxError); ok {
 				fmt.Printf("Erro de sintaxe no byte offset %d: %v\n", e.Offset, err)
 			} else {
@@ -44,9 +43,17 @@ func consumeReceveidDecreaseTicket(msgResult *sqs.ReceiveMessageOutput) {
 			continue
 		}
 
+		body := _updateStatusTicket{
+			MessageError: result.MessageError,
+		}
+
+		if msgError := updateStatusTicket(result.TicketId, &body); msgError != nil {
+			logger.Error(fmt.Sprintf("Ocurred error when try update status ticket %v", msgError), nil)
+			continue
+		}
+
 		if err := queue.DeleteMessage(msg.ReceiptHandle); err != nil {
 			logger.Error("Ocurred errro when try delete message queue", err)
 		}
 	}
-
 }
