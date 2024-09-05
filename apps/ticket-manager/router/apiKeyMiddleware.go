@@ -19,13 +19,11 @@ func apiKeyMiddleware() gin.HandlerFunc {
 		apiKeyReceveid := context.GetHeader("x-api-key")
 
 		if apikey != apiKeyReceveid {
-			logger.Info("Api key is invalid")
 			utils.SendError(context, http.StatusUnauthorized, "Não Autorizado")
 			context.Abort()
 			return
 		}
 
-		logger.Info("Api key is valid, call next route")
 		context.Next()
 	}
 }

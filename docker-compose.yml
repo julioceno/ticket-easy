@@ -27,8 +27,8 @@ services:
       - SERVICES=iam,sqs,lambda,events,logs
       - DEBUG=-0
     volumes:
-      - ./bootstrap/localstack.sh:/etc/localstack/init/ready.d
-      - "localstack-data:/data/lib/localstack"
+      #- ./bootstrap:/etc/localstack/init/ready.d
+      - localstack-data:/data/lib/localstack
       - /var/run/docker.sock:/var/run/docker.sock
 volumes:
   postgres-data:

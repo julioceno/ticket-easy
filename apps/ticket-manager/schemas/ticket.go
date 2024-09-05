@@ -12,6 +12,7 @@ const (
 	StatusProcessing TicketStatus = "PROCESSING"
 	StatusBuying     TicketStatus = "BUYING"
 	StatusError      TicketStatus = "ERROR"
+	StatusCompleted  TicketStatus = "COMPLETED"
 )
 
 type Ticket struct {
