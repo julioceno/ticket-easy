@@ -15,6 +15,11 @@ import (
 	"github.com/julioceno/ticket-easy/apps/event-manager/schemas"
 )
 
+type _body struct {
+	MessageError *string `json:"messageError,omitempty"`
+	Status       *string `json:"status"`
+}
+
 var eventMutexes = &sync.Map{}
 
 func decreaseTicket(event *schemas.Event, ticketId *string) {
@@ -56,10 +61,8 @@ func sentNotifyHttp(ticketId *string, message *string) bool {
 	apiKey := os.Getenv("TICKET_API_KEY")
 	url := fmt.Sprintf("%s/tickets/%s", eventUrl, *ticketId)
 
-	type _body struct {
-		MessageError *string `json:"messageError,omitempty"`
-	}
-	body := _body{MessageError: message}
+	status := "BUYING"
+	body := _body{MessageError: message, Status: &status}
 
 	jsonBody, err := json.Marshal(body)
 	if err != nil {

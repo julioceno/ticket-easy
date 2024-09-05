@@ -4,23 +4,40 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/julioceno/ticket-easy/apps/ticket-manager/config/logger"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/handler/awsServices"
 	"github.com/julioceno/ticket-easy/apps/ticket-manager/schemas"
+	"github.com/julioceno/ticket-easy/apps/ticket-manager/utils"
 )
 
 type _updateStatusTicket struct {
-	MessageError *string `json:"messageError"`
+	MessageError *string               `json:"messageError"`
+	Status       *schemas.TicketStatus `json:"status"`
 }
 
-func updateStatusTicket(id *string, body *_updateStatusTicket) *string {
+func updateStatusTicket(id *string, body *_updateStatusTicket) *utils.ErrorPattern {
+	if err := awsServices.CreateEvent(*id); err != nil {
+		errorCreated := utils.ErrorPattern{
+			Code:    http.StatusBadRequest,
+			Message: "Ocorreu um erro ao tentar garantir o ingresso",
+		}
+		return &errorCreated
+	}
+
 	ctxMongo, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
 	ticket, messageError := getTicket(id, &ctxMongo)
 	if messageError != nil {
-		return messageError
+		errorCreated := utils.ErrorPattern{
+			Code:    http.StatusNotFound,
+			Message: *messageError,
+		}
+
+		return &errorCreated
 	}
 
 	updateTicket(&ctxMongo, body, ticket)
@@ -44,7 +61,7 @@ func updateTicket(ctxMongo *context.Context, body *_updateStatusTicket, ticket *
 		return
 	}
 
-	ticket.Status = schemas.StatusBuying
 	id := ticket.Id.Hex()
+	ticket.Status = *body.Status
 	ticketsRepository.Update(&id, ctxMongo, ticket)
 }

@@ -14,8 +14,8 @@ func ReceveidTicketToUpdateStatus(ctx *gin.Context) {
 		return
 	}
 
-	if msgError := updateStatusTicket(id, body); msgError != nil {
-		utils.SendError(ctx, http.StatusNotFound, *msgError)
+	if err := updateStatusTicket(id, body); err != nil {
+		utils.SendError(ctx, err.Code, err.Message)
 		return
 	}
 

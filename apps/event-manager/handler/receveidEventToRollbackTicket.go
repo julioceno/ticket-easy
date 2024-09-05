@@ -18,6 +18,7 @@ func ReceveidEventToRollbackTicket(ctx *gin.Context) {
 
 	if _, err := rollbackTicket(id); err != nil {
 		utils.SendError(ctx, err.Code, err.Message)
+		return
 	}
 
 	statusCode := http.StatusNoContent

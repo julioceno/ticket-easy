@@ -1,4 +1,4 @@
-package queue
+package awsServices
 
 import (
 	"fmt"
@@ -7,34 +7,39 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/julioceno/ticket-easy/apps/ticket-manager/config/logger"
 )
 
 type Envs struct {
-	queueName       string
 	awsUrl          string
 	awsRegion       string
 	awsAccessKeyID  string
 	awsSecretKey    string
 	awsSessionToken string
+
+	queueName string
+	lambdaArn string
 }
 
 var (
 	awsSession *session.Session
-	queueUrl   *sqs.GetQueueUrlOutput
 )
 
-func init() {
+func Initialize() {
 	envs := getEnvs()
-
 	awsSession = createSession(&envs)
-	queueUrl = getQueueURL(&envs)
+
+	initializeQueue(&envs)
+	initializeEventBridge(&envs)
 }
 
 func getEnvs() Envs {
 	queueName := os.Getenv("QUEUE_REDUCE_TICKET_NAME")
 	throwErrorIfEnvNotExists("QUEUE_REDUCE_TICKET_NAME", queueName)
+
+	// TODO: alterar o nome da variavel de ambiente
+	lambdaArn := os.Getenv("LAMBDA_ARN")
+	throwErrorIfEnvNotExists("LAMBDA_ARN", lambdaArn)
 
 	awsUrl := os.Getenv("AWS_URL")
 	throwErrorIfEnvNotExists("AWS_URL", awsUrl)
@@ -58,6 +63,7 @@ func getEnvs() Envs {
 		awsAccessKeyID:  awsAccessKeyID,
 		awsSecretKey:    awsSecretKey,
 		awsSessionToken: awsSessionToken,
+		lambdaArn:       lambdaArn,
 	}
 }
 
@@ -77,20 +83,4 @@ func createSession(envs *Envs) *session.Session {
 	logger.Info("Session created, create queue instance")
 
 	return sess
-}
-
-func getQueueURL(envs *Envs) *sqs.GetQueueUrlOutput {
-	queueName := envs.queueName
-	svc := sqs.New(awsSession)
-
-	result, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
-		QueueName: &queueName,
-	})
-	if err != nil {
-		logger.Fatal("Ocurred error when get queue connection", err)
-	}
-
-	logger.Info("Obtained queue connection")
-
-	return result
 }
