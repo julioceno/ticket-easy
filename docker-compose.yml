@@ -24,10 +24,10 @@ services:
       - "127.0.0.1:4566:4566"          
       - "127.0.0.1:4510-4559:4510-4559" 
     environment:
-      - SERVICES=sqs,lambda,events,logs
+      - SERVICES=iam,sqs,lambda,events,logs
       - DEBUG=-0
     volumes:
-      - ./scripts/localstack:/etc/localstack/init/ready.d
+      - ./bootstrap/localstack.sh:/etc/localstack/init/ready.d
       - "localstack-data:/data/lib/localstack"
       - /var/run/docker.sock:/var/run/docker.sock
 volumes:

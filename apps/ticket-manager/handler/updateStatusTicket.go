@@ -19,6 +19,7 @@ type _updateStatusTicket struct {
 }
 
 func updateStatusTicket(id *string, body *_updateStatusTicket) *utils.ErrorPattern {
+	// TODO: Criar esse evento apenas quando o status for BUYING
 	if err := awsServices.CreateEvent(*id); err != nil {
 		errorCreated := utils.ErrorPattern{
 			Code:    http.StatusBadRequest,
