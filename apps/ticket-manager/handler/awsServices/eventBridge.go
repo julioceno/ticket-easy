@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	eventBrigeService *eventbridge.EventBridge
+	eventBridgeService *eventbridge.EventBridge
 
 	LAMBDA_ARN           string
 	SCHEDULER_EXPRESSION = "rate(2 minutes)" // TODO: alterar pra 10
@@ -17,13 +17,13 @@ var (
 
 func initializeEventBridge(envs *Envs) {
 	svc := eventbridge.New(awsSession)
-	eventBrigeService = svc
+	eventBridgeService = svc
 	LAMBDA_ARN = envs.lambdaArn
 }
 
 func CreateEvent(ticketId string) error {
 	// TODO: entender melhor essa parte
-	eventBrigeService.PutRule(&eventbridge.PutRuleInput{
+	eventBridgeService.PutRule(&eventbridge.PutRuleInput{
 		Name:               aws.String(ticketId),
 		ScheduleExpression: aws.String(SCHEDULER_EXPRESSION),
 		State:              aws.String(eventbridge.RuleStateEnabled),
@@ -39,11 +39,11 @@ func CreateEvent(ticketId string) error {
 		return err
 	}
 
-	_, err = eventBrigeService.PutTargets(&eventbridge.PutTargetsInput{
+	_, err = eventBridgeService.PutTargets(&eventbridge.PutTargetsInput{
 		Rule: aws.String(ticketId),
 		Targets: []*eventbridge.Target{
 			{
-				Id:    aws.String("1"),
+				Id:    aws.String("lambda"),
 				Arn:   aws.String(LAMBDA_ARN),
 				Input: aws.String(string(payloadJson)),
 			},
@@ -52,6 +52,36 @@ func CreateEvent(ticketId string) error {
 
 	if err != nil {
 		logger.Error("failed to create target, %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func DeleteEvent(ticketId string) error {
+	_, err := eventBridgeService.DescribeRule(&eventbridge.DescribeRuleInput{
+		Name: aws.String(ticketId),
+	})
+	if err != nil {
+		return nil
+	}
+
+	ids := []string{"lambda"}
+	_, err = eventBridgeService.RemoveTargets(&eventbridge.RemoveTargetsInput{
+		Rule:  aws.String(ticketId),
+		Ids:   aws.StringSlice(ids),
+		Force: aws.Bool(true),
+	})
+	if err != nil {
+		logger.Error("failed remove targets from lambda, %v", err)
+		return err
+	}
+
+	_, err = eventBridgeService.DeleteRule(&eventbridge.DeleteRuleInput{
+		Name: aws.String(ticketId),
+	})
+	if err != nil {
+		logger.Error("failed to delete rule, %v", err)
 		return err
 	}
 

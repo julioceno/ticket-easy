@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -21,14 +19,8 @@ func main() {
 }
 
 func handler(context context.Context, ticketResponse RequestBody) (events.APIGatewayProxyResponse, error) {
-	body := map[string]string{"status": "COMPLETED"}
-	jsonBody, err := json.Marshal(body)
-	if err != nil {
-		log.Fatalf("Occurred error when convert message to JSON", err)
-	}
-
-	url := fmt.Sprintf("http://host.docker.internal:8082/tickets/%s", ticketResponse.TicketId)
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonBody))
+	url := fmt.Sprintf("http://host.docker.internal:8082/tickets/%s/expire-ticket", ticketResponse.TicketId)
+	req, err := http.NewRequest("PATCH", url, nil)
 	if err != nil {
 		log.Fatalf("Occurred error when create request to service", err)
 	}

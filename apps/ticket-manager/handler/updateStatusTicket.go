@@ -2,8 +2,6 @@ package handler
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -19,16 +17,7 @@ type _updateStatusTicket struct {
 }
 
 func updateStatusTicket(id *string, body *_updateStatusTicket) *utils.ErrorPattern {
-	// TODO: Criar esse evento apenas quando o status for BUYING
-	if err := awsServices.CreateEvent(*id); err != nil {
-		errorCreated := utils.ErrorPattern{
-			Code:    http.StatusBadRequest,
-			Message: "Ocorreu um erro ao tentar garantir o ingresso",
-		}
-		return &errorCreated
-	}
-
-	ctxMongo, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctxMongo, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	ticket, messageError := getTicket(id, &ctxMongo)
@@ -41,28 +30,48 @@ func updateStatusTicket(id *string, body *_updateStatusTicket) *utils.ErrorPatte
 		return &errorCreated
 	}
 
-	updateTicket(&ctxMongo, body, ticket)
-	return nil
-}
-
-func getTicket(id *string, ctxMongo *context.Context) (*schemas.Ticket, *string) {
-	ticket := ticketsRepository.FindById(id, ctxMongo)
-	if ticket == nil {
-		logger.Error("When try update ticket, document not exists", errors.New(fmt.Sprint("Ticket with id %v not exists", id)))
-		msg := fmt.Sprintf("Ticket de id %v não existe", id)
-		return nil, &msg
+	ticketUpdated, err := updateTicket(&ctxMongo, body, ticket)
+	if err != nil {
+		return err
 	}
 
-	return ticket, nil
+	return createLambdaExpression(ticketUpdated.Id.Hex())
 }
 
-func updateTicket(ctxMongo *context.Context, body *_updateStatusTicket, ticket *schemas.Ticket) {
+func updateTicket(ctxMongo *context.Context, body *_updateStatusTicket, ticket *schemas.Ticket) (*schemas.Ticket, *utils.ErrorPattern) {
+	defaultError := utils.ErrorPattern{
+		Code:    http.StatusNotFound,
+		Message: "Ocorreu um erro ao tentar atualizar o ingresso",
+	}
+
 	if body != nil && body.MessageError != nil {
-		updateEventError(ctxMongo, body.MessageError, ticket)
-		return
+		ticketUpdated, err := updateEventError(ctxMongo, body.MessageError, ticket)
+		if err != nil {
+			return nil, &defaultError
+		}
+		return ticketUpdated, nil
 	}
 
 	id := ticket.Id.Hex()
 	ticket.Status = *body.Status
-	ticketsRepository.Update(&id, ctxMongo, ticket)
+	ticketUpdated, err := ticketsRepository.Update(&id, ctxMongo, ticket)
+
+	if err != nil {
+		logger.Error("Ocurred error when try update ticket", err)
+		return nil, &defaultError
+	}
+
+	return ticketUpdated, nil
+}
+
+func createLambdaExpression(ticketId string) *utils.ErrorPattern {
+	if err := awsServices.CreateEvent(ticketId); err != nil {
+		errorCreated := utils.ErrorPattern{
+			Code:    http.StatusBadRequest,
+			Message: "Ocorreu um erro ao tentar garantir o ingresso",
+		}
+		return &errorCreated
+	}
+
+	return nil
 }

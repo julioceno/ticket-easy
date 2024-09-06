@@ -14,7 +14,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// TODO: so pegar o ticket se pertencer ao usuario que for especificado
 func GetTicketById(ctx *gin.Context) {
 	id, userId, hasError := getIdAndUserId(ctx)
 	if hasError {
