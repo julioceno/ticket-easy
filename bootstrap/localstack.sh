@@ -36,7 +36,8 @@ create_lambda() {
 
 
 create_queue "reduce-ticket"
-echo "Queue created"
+create_queue "rollback-ticket"
+echo "Queues created"
 
 create_lambda "verify-payment" "./verify-payment" 
 echo "lambda created"

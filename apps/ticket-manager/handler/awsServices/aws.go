@@ -17,8 +17,8 @@ type Envs struct {
 	awsSecretKey    string
 	awsSessionToken string
 
-	queueName string
-	lambdaArn string
+	queueName              string
+	lambdaArnVerifyPayment string
 }
 
 var (
@@ -37,9 +37,8 @@ func getEnvs() Envs {
 	queueName := os.Getenv("QUEUE_REDUCE_TICKET_NAME")
 	throwErrorIfEnvNotExists("QUEUE_REDUCE_TICKET_NAME", queueName)
 
-	// TODO: alterar o nome da variavel de ambiente
-	lambdaArn := os.Getenv("LAMBDA_ARN")
-	throwErrorIfEnvNotExists("LAMBDA_ARN", lambdaArn)
+	lambdaArnVerifyPayment := os.Getenv("LAMBDA_ARN_VERIFY_PAYMENT")
+	throwErrorIfEnvNotExists("LAMBDA_ARN_VERIFY_PAYMENT", lambdaArnVerifyPayment)
 
 	awsUrl := os.Getenv("AWS_URL")
 	throwErrorIfEnvNotExists("AWS_URL", awsUrl)
@@ -57,13 +56,13 @@ func getEnvs() Envs {
 	throwErrorIfEnvNotExists("AWS_SESSION_TOKEN", awsSessionToken)
 
 	return Envs{
-		queueName:       queueName,
-		awsUrl:          awsUrl,
-		awsRegion:       awsRegion,
-		awsAccessKeyID:  awsAccessKeyID,
-		awsSecretKey:    awsSecretKey,
-		awsSessionToken: awsSessionToken,
-		lambdaArn:       lambdaArn,
+		queueName:              queueName,
+		awsUrl:                 awsUrl,
+		awsRegion:              awsRegion,
+		awsAccessKeyID:         awsAccessKeyID,
+		awsSecretKey:           awsSecretKey,
+		awsSessionToken:        awsSessionToken,
+		lambdaArnVerifyPayment: lambdaArnVerifyPayment,
 	}
 }
 

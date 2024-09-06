@@ -23,7 +23,7 @@ func getTicket(id *string, ctxMongo *context.Context) (*schemas.Ticket, *string)
 	ticket := ticketsRepository.FindById(id, ctxMongo)
 	if ticket == nil {
 		logger.Error("When try update ticket, document not exists", errors.New(fmt.Sprint("Ticket with id %v not exists", id)))
-		msg := fmt.Sprintf("Ticket de id %v não existe", id)
+		msg := fmt.Sprintf("Ticket de id %v não existe", *id)
 		return nil, &msg
 	}
 

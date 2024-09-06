@@ -8,7 +8,7 @@ func DeleteMessage(receiptHandle *string) error {
 	svc := sqs.New(awsSession)
 
 	_, err := svc.DeleteMessage(&sqs.DeleteMessageInput{
-		QueueUrl:      queueUrl.QueueUrl,
+		QueueUrl:      queueRollbackTicket.QueueUrl,
 		ReceiptHandle: receiptHandle,
 	})
 

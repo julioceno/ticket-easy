@@ -11,7 +11,7 @@ func SendMessage(message string) error {
 	_, err := svc.SendMessage(&sqs.SendMessageInput{
 		DelaySeconds: aws.Int64(10),
 		MessageBody:  aws.String(message),
-		QueueUrl:     queueUrl.QueueUrl,
+		QueueUrl:     queueReduceTicket.QueueUrl,
 	})
 
 	if err != nil {

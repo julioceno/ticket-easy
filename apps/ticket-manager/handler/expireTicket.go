@@ -38,12 +38,16 @@ func ExpireTicket(ctx *gin.Context) {
 	status := schemas.StatusError
 	msg := "Ingresso não foi pago no tempo"
 	body := _updateStatusTicket{Status: &status, MessageError: &msg}
-	if _, errUpdateTicket := updateTicket(&ctxMongo, &body, ticket); errUpdateTicket != nil {
-		utils.SendError(ctx, errUpdateTicket.Code, errUpdateTicket.Message)
+	if _, err := updateTicket(&ctxMongo, &body, ticket); err != nil {
+		utils.SendError(ctx, err.Code, err.Message)
 		return
 	}
 
-	deleteLambdaExpression(ticket.Id.Hex())
+	if err := deleteLambdaExpression(ticket.Id.Hex()); err != nil {
+		utils.SendError(ctx, err.Code, err.Message)
+		return
+	}
+
 	utils.SendSuccess(utils.SendSuccesStruct{ctx, "PATCH", nil, nil})
 }
 

@@ -18,7 +18,7 @@ var (
 func initializeEventBridge(envs *Envs) {
 	svc := eventbridge.New(awsSession)
 	eventBridgeService = svc
-	LAMBDA_ARN = envs.lambdaArn
+	LAMBDA_ARN = envs.lambdaArnVerifyPayment
 }
 
 func CreateEvent(ticketId string) error {

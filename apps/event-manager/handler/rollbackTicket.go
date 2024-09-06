@@ -16,8 +16,8 @@ func rollbackTicket(eventId string) (*schemas.Event, *utils.ErrorPattern) {
 	defer cancel()
 
 	currentEvent := eventsRepository.FindById(&eventId, &ctxMongo)
-	if currentEvent != nil {
-		msg := fmt.Sprintf("Event with id %s not exists", currentEvent.Id)
+	if currentEvent == nil {
+		msg := fmt.Sprintf("Event with id %s not exists", currentEvent.Id.Hex())
 		logger.Error(msg, nil)
 		return nil, &utils.ErrorPattern{
 			Code:    http.StatusNotFound,

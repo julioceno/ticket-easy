@@ -9,7 +9,7 @@ func ReceveidMessage() (*sqs.ReceiveMessageOutput, error) {
 	svc := sqs.New(awsSession)
 
 	msgResult, err := svc.ReceiveMessage(&sqs.ReceiveMessageInput{
-		QueueUrl:            queueUrl.QueueUrl,
+		QueueUrl:            queueRollbackTicket.QueueUrl,
 		MaxNumberOfMessages: aws.Int64(10),
 		WaitTimeSeconds:     aws.Int64(10),
 	})

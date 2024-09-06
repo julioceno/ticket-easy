@@ -12,7 +12,9 @@ import (
 )
 
 type Envs struct {
-	queueName       string
+	queueReduceTicket   string
+	queueRollbackTicket string
+
 	awsUrl          string
 	awsRegion       string
 	awsAccessKeyID  string
@@ -21,20 +23,25 @@ type Envs struct {
 }
 
 var (
-	awsSession *session.Session
-	queueUrl   *sqs.GetQueueUrlOutput
+	awsSession          *session.Session
+	queueReduceTicket   *sqs.GetQueueUrlOutput
+	queueRollbackTicket *sqs.GetQueueUrlOutput
 )
 
 func init() {
 	envs := getEnvs()
 
 	awsSession = createSession(&envs)
-	queueUrl = getQueueURL(&envs)
+	queueReduceTicket = getQueueURL(&envs.queueReduceTicket)
+	queueRollbackTicket = getQueueURL(&envs.queueRollbackTicket)
 }
 
 func getEnvs() Envs {
-	queueName := os.Getenv("QUEUE_REDUCE_TICKET_NAME")
-	throwErrorIfEnvNotExists("QUEUE_REDUCE_TICKET_NAME", queueName)
+	queueReduceTicket := os.Getenv("QUEUE_REDUCE_TICKET_NAME")
+	throwErrorIfEnvNotExists("QUEUE_REDUCE_TICKET_NAME", queueReduceTicket)
+
+	queueRollbackTicket := os.Getenv("QUEUE_ROLLBACK_TICKET_NAME")
+	throwErrorIfEnvNotExists("QUEUE_ROLLBACK_TICKET_NAME", queueReduceTicket)
 
 	awsUrl := os.Getenv("AWS_URL")
 	throwErrorIfEnvNotExists("AWS_URL", awsUrl)
@@ -52,12 +59,13 @@ func getEnvs() Envs {
 	throwErrorIfEnvNotExists("AWS_SESSION_TOKEN", awsSessionToken)
 
 	return Envs{
-		queueName:       queueName,
-		awsUrl:          awsUrl,
-		awsRegion:       awsRegion,
-		awsAccessKeyID:  awsAccessKeyID,
-		awsSecretKey:    awsSecretKey,
-		awsSessionToken: awsSessionToken,
+		queueReduceTicket:   queueReduceTicket,
+		queueRollbackTicket: queueRollbackTicket,
+		awsUrl:              awsUrl,
+		awsRegion:           awsRegion,
+		awsAccessKeyID:      awsAccessKeyID,
+		awsSecretKey:        awsSecretKey,
+		awsSessionToken:     awsSessionToken,
 	}
 }
 
@@ -79,12 +87,11 @@ func createSession(envs *Envs) *session.Session {
 	return sess
 }
 
-func getQueueURL(envs *Envs) *sqs.GetQueueUrlOutput {
-	queueName := envs.queueName
+func getQueueURL(queueUrl *string) *sqs.GetQueueUrlOutput {
 	svc := sqs.New(awsSession)
 
 	result, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
-		QueueName: &queueName,
+		QueueName: queueUrl,
 	})
 	if err != nil {
 		logger.Fatal("Ocurred error when get queue connection", err)
