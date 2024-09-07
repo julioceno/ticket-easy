@@ -6,23 +6,22 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/julioceno/ticket-easy/apps/ticket-manager/config/logger"
 	"github.com/julioceno/ticket-easy/apps/ticket-manager/schemas"
 	"github.com/julioceno/ticket-easy/apps/ticket-manager/utils"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func PaymnetTicket(ctx *gin.Context) {
-	id, err := utils.GetIdParam(ctx)
-	if err != nil {
-		logger.Error("Ocurred error when get id", err)
-		utils.SendError(ctx, http.StatusNotFound, "Não foi possível obter o id")
+	id, userId, hasError := getIdAndUserId(ctx)
+	if hasError {
 		return
 	}
 
 	ctxMongo, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	ticket, messageError := getTicket(&id, &ctxMongo)
+	filters := bson.M{"userId": userId}
+	ticket, messageError := getTicket(id, &ctxMongo, filters)
 	if messageError != nil {
 		utils.SendError(ctx, http.StatusNotFound, *messageError)
 		return

@@ -70,4 +70,15 @@ public class TicketsController {
                 ResponseTicketDTO responseTicketDTO = ticketsService.findById(id, authenticatedUser.getId());
                 return ResponseEntity.ok(responseTicketDTO);
         }
+
+        @Operation(summary = "Faz o pagamento pendente de um ingresso")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "204", description = "Informa que a request foi bem sucedida"),
+        })
+        @PatchMapping("/{id}/payment")
+        public ResponseEntity<ResponseTicketDTO> payment(@PathVariable String id) {
+                User authenticatedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                ticketsService.payment(id, authenticatedUser.getId());
+                return ResponseEntity.ok(null);
+        }
 }

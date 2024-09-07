@@ -25,7 +25,7 @@ func ExpireTicket(ctx *gin.Context) {
 	ctxMongo, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	ticket, messageError := getTicket(&id, &ctxMongo)
+	ticket, messageError := getTicket(&id, &ctxMongo, nil)
 	if messageError != nil {
 		utils.SendError(ctx, http.StatusNotFound, *messageError)
 		return
@@ -37,15 +37,20 @@ func ExpireTicket(ctx *gin.Context) {
 		return
 	}
 
-	status := schemas.StatusError
-	msg := "Ingresso não foi pago no tempo"
-	body := _updateStatusTicket{Status: &status, MessageError: &msg}
-	if _, err := updateTicket(&ctxMongo, &body, ticket); err != nil {
-		utils.SendError(ctx, err.Code, err.Message)
-		return
+	needRollbackTicket := ticket.Status == schemas.StatusBuying
+	if needRollbackTicket {
+		status := schemas.StatusError
+		msg := "Ingresso não foi pago no tempo"
+		body := _updateStatusTicket{Status: &status, MessageError: &msg}
+
+		if _, err := updateTicket(&ctxMongo, &body, ticket); err != nil {
+			utils.SendError(ctx, err.Code, err.Message)
+			return
+		}
+
+		sendRollbackTicketHttp(&ticket.EventId)
 	}
 
-	sendRollbackTicketHttp(&ticket.EventId)
 	if err := deleteLambdaExpression(ticket.Id.Hex()); err != nil {
 		utils.SendError(ctx, err.Code, err.Message)
 		return

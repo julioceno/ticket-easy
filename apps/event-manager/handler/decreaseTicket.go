@@ -20,7 +20,9 @@ type _body struct {
 	Status       *string `json:"status"`
 }
 
-var eventMutexes = &sync.Map{}
+var (
+	eventMutexesDecreaseTicket = &sync.Map{}
+)
 
 func decreaseTicket(event *schemas.Event, ticketId *string) {
 	msg := updateEventDecreaseTicket(event)
@@ -33,7 +35,7 @@ func decreaseTicket(event *schemas.Event, ticketId *string) {
 
 func updateEventDecreaseTicket(event *schemas.Event) *string {
 	eventId := event.Id.Hex()
-	mutexInterface, _ := eventMutexes.LoadOrStore(eventId, &sync.Mutex{})
+	mutexInterface, _ := eventMutexesDecreaseTicket.LoadOrStore(eventId, &sync.Mutex{})
 	mutex := mutexInterface.(*sync.Mutex)
 	mutex.Lock()
 
@@ -41,7 +43,7 @@ func updateEventDecreaseTicket(event *schemas.Event) *string {
 	defer func() {
 		cancel()
 		mutex.Unlock()
-		eventMutexes.Delete(eventId)
+		eventMutexesDecreaseTicket.Delete(eventId)
 	}()
 
 	currentEvent := eventsRepository.FindById(&eventId, &ctxMongo)

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -30,25 +29,6 @@ func GetTicketById(ctx *gin.Context) {
 
 	response := ticket.ToResponse()
 	utils.SendSuccess(utils.SendSuccesStruct{ctx, "GET", response, nil})
-}
-
-func getIdAndUserId(ctx *gin.Context) (*string, *string, bool) {
-	id, err := utils.GetIdParam(ctx)
-	if err != nil {
-		logger.Error("Id not exists", err)
-		utils.SendError(ctx, http.StatusBadRequest, "Id não foi especificado")
-		return nil, nil, true
-	}
-
-	userId, isOk := ctx.GetQuery("userId")
-	if !isOk {
-		errCreated := errors.New("User Id not exists")
-		logger.Error("User Id not exists", errCreated)
-		utils.SendError(ctx, http.StatusBadRequest, "UserId não foi especificado")
-		return nil, nil, true
-	}
-
-	return &id, &userId, false
 }
 
 func throwErrorIfNotExistsEvent(ctx *gin.Context, ticket *schemas.Ticket) bool {

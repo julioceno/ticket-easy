@@ -15,6 +15,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -61,6 +62,27 @@ public class TicketsService {
                     ResponseTicketDTO.class);
 
             return response.getBody();
+        } catch (HttpClientErrorException err) {
+            IntegrationErrorMap.validation(err);
+            throw new InternalServerErrorException();
+        }
+    }
+
+    public void payment(String id, String userId) {
+        try {
+            HttpEntity<String> httpEntity = createHttpEntity(null);
+            RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
+            String url =getUrl() + id + "/payment";
+            UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(url);
+            urlBuilder.queryParam("userId", userId);
+
+            restTemplate.exchange(
+                    urlBuilder.toUriString(),
+                    HttpMethod.PATCH,
+                    httpEntity,
+                    void.class);
+
         } catch (HttpClientErrorException err) {
             IntegrationErrorMap.validation(err);
             throw new InternalServerErrorException();

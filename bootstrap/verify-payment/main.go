@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -24,28 +23,14 @@ func handler(ctx context.Context, ticketResponse RequestBody) (events.APIGateway
 	req, err := http.NewRequest("PATCH", url, nil)
 	if err != nil {
 		log.Printf("Error creating request: %v", err)
-		return events.APIGatewayProxyResponse{StatusCode: 500}, err
 	}
 
 	req.Header.Set("x-api-key", "secret")
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{
-		Timeout: 10 * time.Second,
-	}
+	client := &http.Client{}
+	go client.Do(req)
 
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Printf("Error sending request: %v", err)
-		return events.APIGatewayProxyResponse{StatusCode: 500}, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		log.Printf("Service returned non-OK status: %d", resp.StatusCode)
-		return events.APIGatewayProxyResponse{StatusCode: resp.StatusCode}, nil
-	}
-
-	log.Println("Completing request...")
+	log.Printf("Completed request for ticket %s...", ticketResponse.TicketId)
 	return events.APIGatewayProxyResponse{StatusCode: 200}, nil
 }

@@ -20,7 +20,7 @@ func updateStatusTicket(id *string, body *_updateStatusTicket) *utils.ErrorPatte
 	ctxMongo, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	ticket, messageError := getTicket(id, &ctxMongo)
+	ticket, messageError := getTicket(id, &ctxMongo, nil)
 	if messageError != nil {
 		errorCreated := utils.ErrorPattern{
 			Code:    http.StatusNotFound,
