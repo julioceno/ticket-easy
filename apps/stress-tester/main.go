@@ -13,15 +13,14 @@ func main() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-
-			createRequest(i)
+			createRequest()
 		}()
 	}
 
 	wg.Wait()
 }
 
-func createRequest(index int) {
+func createRequest() {
 	var jsonStr = []byte(`{
 			"eventId": "66dc6bbb62b2420a271ebf87",
 			"userId": "66d37ec1e08c07d3f15dee4c"
