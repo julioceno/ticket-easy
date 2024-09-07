@@ -36,6 +36,6 @@ func PaymnetTicket(ctx *gin.Context) {
 		return
 	}
 
-	deleteLambdaExpression(ticket.Id.Hex())
+	go deleteEventBridge(ticket.Id.Hex())
 	utils.SendSuccess(utils.SendSuccesStruct{ctx, "PATCH", nil, nil})
 }

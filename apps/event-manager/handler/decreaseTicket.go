@@ -103,7 +103,7 @@ func sendMessageQueue(ticketId *string, message *string) {
 		return
 	}
 
-	if err := queue.SendMessage(string(jsonBody)); err != nil {
+	if err := queue.SendMessage(queue.QueueDecreaseTicket, string(jsonBody)); err != nil {
 		logger.Error("Ocurred error when try send message to queue", err)
 	}
 }

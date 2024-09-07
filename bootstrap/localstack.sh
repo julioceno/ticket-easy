@@ -36,7 +36,7 @@ create_lambda() {
 }
 
 
-create_queue "reduce-ticket"
+create_queue "decrease-ticket"
 create_queue "rollback-ticket"
 echo "Queues created"
 

@@ -12,7 +12,7 @@ import (
 )
 
 type Envs struct {
-	queueReduceTicket   string
+	queueDecreaseTicket string
 	queueRollbackTicket string
 
 	awsUrl          string
@@ -24,24 +24,24 @@ type Envs struct {
 
 var (
 	awsSession          *session.Session
-	queueReduceTicket   *sqs.GetQueueUrlOutput
-	queueRollbackTicket *sqs.GetQueueUrlOutput
+	QueueDecreaseTicket *sqs.GetQueueUrlOutput
+	QueueRollbackTicket *sqs.GetQueueUrlOutput
 )
 
 func init() {
 	envs := getEnvs()
 
 	awsSession = createSession(&envs)
-	queueReduceTicket = getQueueURL(&envs.queueReduceTicket)
-	queueRollbackTicket = getQueueURL(&envs.queueRollbackTicket)
+	QueueDecreaseTicket = getQueueURL(&envs.queueDecreaseTicket)
+	QueueRollbackTicket = getQueueURL(&envs.queueRollbackTicket)
 }
 
 func getEnvs() Envs {
-	queueReduceTicket := os.Getenv("QUEUE_REDUCE_TICKET_NAME")
-	throwErrorIfEnvNotExists("QUEUE_REDUCE_TICKET_NAME", queueReduceTicket)
+	queueDecreaseTicket := os.Getenv("QUEUE_Decrease_TICKET_NAME")
+	throwErrorIfEnvNotExists("QUEUE_DECREASE_TICKET_NAME", queueDecreaseTicket)
 
 	queueRollbackTicket := os.Getenv("QUEUE_ROLLBACK_TICKET_NAME")
-	throwErrorIfEnvNotExists("QUEUE_ROLLBACK_TICKET_NAME", queueReduceTicket)
+	throwErrorIfEnvNotExists("QUEUE_ROLLBACK_TICKET_NAME", queueRollbackTicket)
 
 	awsUrl := os.Getenv("AWS_URL")
 	throwErrorIfEnvNotExists("AWS_URL", awsUrl)
@@ -59,7 +59,7 @@ func getEnvs() Envs {
 	throwErrorIfEnvNotExists("AWS_SESSION_TOKEN", awsSessionToken)
 
 	return Envs{
-		queueReduceTicket:   queueReduceTicket,
+		queueDecreaseTicket: queueDecreaseTicket,
 		queueRollbackTicket: queueRollbackTicket,
 		awsUrl:              awsUrl,
 		awsRegion:           awsRegion,

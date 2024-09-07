@@ -10,22 +10,36 @@ var (
 	queueUrl *sqs.GetQueueUrlOutput
 )
 
-func initializeQueue(envs *Envs) {
-	queueName := envs.queueName
+func initializeQueue(queueName *string) *sqs.GetQueueUrlOutput {
 	queueService := sqs.New(awsSession)
-
 	result, err := queueService.GetQueueUrl(&sqs.GetQueueUrlInput{
-		QueueName: &queueName,
+		QueueName: queueName,
 	})
 	if err != nil {
 		logger.Fatal("Ocurred error when get queue connection", err)
 	}
 
 	logger.Info("Obtained queue connection")
-	queueUrl = result
+	return result
 }
 
-func ReceveidMessage() (*sqs.ReceiveMessageOutput, error) {
+func SendMessage(queueUrl *sqs.GetQueueUrlOutput, message string) error {
+	svc := sqs.New(awsSession)
+
+	_, err := svc.SendMessage(&sqs.SendMessageInput{
+		DelaySeconds: aws.Int64(10),
+		MessageBody:  aws.String(message),
+		QueueUrl:     queueUrl.QueueUrl,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ReceveidMessage(queueUrl *sqs.GetQueueUrlOutput) (*sqs.ReceiveMessageOutput, error) {
 	svc := sqs.New(awsSession)
 
 	msgResult, err := svc.ReceiveMessage(&sqs.ReceiveMessageInput{
@@ -41,7 +55,7 @@ func ReceveidMessage() (*sqs.ReceiveMessageOutput, error) {
 	return msgResult, nil
 }
 
-func DeleteMessage(receiptHandle *string) error {
+func DeleteMessage(queueUrl *sqs.GetQueueUrlOutput, receiptHandle *string) error {
 	svc := sqs.New(awsSession)
 
 	_, err := svc.DeleteMessage(&sqs.DeleteMessageInput{

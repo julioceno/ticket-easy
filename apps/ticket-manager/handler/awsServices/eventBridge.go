@@ -13,7 +13,7 @@ var (
 	eventBridgeService *eventbridge.EventBridge
 
 	LAMBDA_ARN           string
-	SCHEDULER_EXPRESSION = "rate(2 minutes)" // TODO: alterar pra 10
+	SCHEDULER_EXPRESSION = "rate(2 minutes)" // TODO: increase value
 )
 
 func initializeEventBridge(envs *Envs) {

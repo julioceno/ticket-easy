@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/julioceno/ticket-easy/apps/ticket-manager/config/logger"
 )
 
@@ -17,25 +18,33 @@ type Envs struct {
 	awsSecretKey    string
 	awsSessionToken string
 
-	queueName              string
 	lambdaArnVerifyPayment string
+
+	queueDecreaseTicket string
+	queueRollbackTicket string
 }
 
 var (
-	awsSession *session.Session
+	awsSession          *session.Session
+	QueueDecreaseTicket *sqs.GetQueueUrlOutput
+	QueueRollbackTicket *sqs.GetQueueUrlOutput
 )
 
 func Initialize() {
 	envs := getEnvs()
 	awsSession = createSession(&envs)
 
-	initializeQueue(&envs)
+	QueueDecreaseTicket = initializeQueue(&envs.queueDecreaseTicket)
+	QueueRollbackTicket = initializeQueue(&envs.queueRollbackTicket)
 	initializeEventBridge(&envs)
 }
 
 func getEnvs() Envs {
-	queueName := os.Getenv("QUEUE_REDUCE_TICKET_NAME")
-	throwErrorIfEnvNotExists("QUEUE_REDUCE_TICKET_NAME", queueName)
+	queueDecreaseTicket := os.Getenv("QUEUE_Decrease_TICKET_NAME")
+	throwErrorIfEnvNotExists("QUEUE_DECREASE_TICKET_NAME", queueDecreaseTicket)
+
+	queueRollbackTicket := os.Getenv("QUEUE_ROLLBACK_TICKET_NAME")
+	throwErrorIfEnvNotExists("QUEUE_ROLLBACK_TICKET_NAME", queueRollbackTicket)
 
 	lambdaArnVerifyPayment := os.Getenv("LAMBDA_ARN_VERIFY_PAYMENT")
 	throwErrorIfEnvNotExists("LAMBDA_ARN_VERIFY_PAYMENT", lambdaArnVerifyPayment)
@@ -56,7 +65,8 @@ func getEnvs() Envs {
 	throwErrorIfEnvNotExists("AWS_SESSION_TOKEN", awsSessionToken)
 
 	return Envs{
-		queueName:              queueName,
+		queueDecreaseTicket:    queueDecreaseTicket,
+		queueRollbackTicket:    queueRollbackTicket,
 		awsUrl:                 awsUrl,
 		awsRegion:              awsRegion,
 		awsAccessKeyID:         awsAccessKeyID,

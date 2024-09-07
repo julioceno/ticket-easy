@@ -40,6 +40,6 @@ public class CreateTokenService {
     private Instant generateExpirationDate() {
         return Instant
                 .now()
-                .plus(Duration.ofHours(30)); // TODO Diminuir o tempo
+                .plus(Duration.ofHours(30)); // TODO: add in settings
     }
 }

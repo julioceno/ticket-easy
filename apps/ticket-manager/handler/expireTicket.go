@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -31,12 +32,6 @@ func ExpireTicket(ctx *gin.Context) {
 		return
 	}
 
-	isExpired := verifyIsExpired(ticket)
-	if !isExpired {
-		utils.SendSuccess(utils.SendSuccesStruct{ctx, "PATCH", nil, nil})
-		return
-	}
-
 	needRollbackTicket := ticket.Status == schemas.StatusBuying
 	if needRollbackTicket {
 		status := schemas.StatusError
@@ -48,27 +43,15 @@ func ExpireTicket(ctx *gin.Context) {
 			return
 		}
 
-		sendRollbackTicketHttp(&ticket.EventId)
-	}
-
-	if err := deleteLambdaExpression(ticket.Id.Hex()); err != nil {
-		utils.SendError(ctx, err.Code, err.Message)
-		return
+		if hasError := managementRollbackTicket(&ticket.EventId); !hasError {
+			go deleteEventBridge(ticket.Id.Hex())
+		}
 	}
 
 	utils.SendSuccess(utils.SendSuccesStruct{ctx, "PATCH", nil, nil})
 }
 
-func verifyIsExpired(ticket *schemas.Ticket) bool {
-	createdAt := ticket.CreatedAt
-	currentTime := time.Now()
-	diff := currentTime.Sub(createdAt)
-	isExpired := diff > 1*time.Minute
-
-	return isExpired
-}
-
-func deleteLambdaExpression(ticketId string) *utils.ErrorPattern {
+func deleteEventBridge(ticketId string) *utils.ErrorPattern {
 	if err := awsServices.DeleteEvent(ticketId); err != nil {
 		errorCreated := utils.ErrorPattern{
 			Code:    http.StatusBadRequest,
@@ -79,7 +62,20 @@ func deleteLambdaExpression(ticketId string) *utils.ErrorPattern {
 	return nil
 }
 
+func managementRollbackTicket(eventId *string) bool {
+	if hasError := sendRollbackTicketHttp(eventId); !hasError {
+		return false
+	}
+
+	if hasError := sendMessageRollbackTicketQueue(eventId); hasError {
+		return true
+	}
+
+	return false
+}
+
 func sendRollbackTicketHttp(eventId *string) bool {
+	return true
 	eventUrl := os.Getenv("EVENT_URL")
 	apiKey := os.Getenv("EVENT_API_KEY")
 	url := fmt.Sprintf("%s/events/%s/rollback-ticket", eventUrl, *eventId)
@@ -100,6 +96,26 @@ func sendRollbackTicketHttp(eventId *string) bool {
 	}
 
 	if ocurredAnyError := response.StatusCode != http.StatusNoContent; ocurredAnyError {
+		return true
+	}
+
+	return false
+}
+
+func sendMessageRollbackTicketQueue(eventId *string) bool {
+	type _body struct {
+		EventId *string `json:"eventId"`
+	}
+	body := _body{EventId: eventId}
+
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		logger.Error("Occurred error in marshal message to JSON", err)
+		return true
+	}
+
+	if err := awsServices.SendMessage(awsServices.QueueRollbackTicket, string(jsonBody)); err != nil {
+		logger.Error("Ocurred error when try send message to queue", err)
 		return true
 	}
 

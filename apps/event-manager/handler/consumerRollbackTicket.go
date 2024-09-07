@@ -16,7 +16,7 @@ type eventAction struct {
 
 func startConsumerRollbackTicket() {
 	for {
-		msgResult, err := queue.ReceveidMessage()
+		msgResult, err := queue.ReceveidMessage(queue.QueueRollbackTicket)
 		if err != nil {
 			logger.Error("Ocurred error when try to get queue messages", err)
 			time.Sleep(5 * time.Second)
@@ -32,18 +32,17 @@ func consumeReceveidDecreaseTicket(msgResult *sqs.ReceiveMessageOutput) {
 		var result eventAction
 
 		if err := json.Unmarshal([]byte(*msg.Body), &result); err != nil {
-			// TODO: traduzir pra ingles
 			fmt.Println("Message:", *msg.Body)
 			if e, ok := err.(*json.SyntaxError); ok {
-				fmt.Printf("Erro de sintaxe no byte offset %d: %v\n", e.Offset, err)
+				fmt.Printf("Syntax error byte offset %d: %v\n", e.Offset, err)
 			} else {
-				fmt.Printf("Erro ao desserializar a mensagem: %v\n", err)
+				fmt.Printf("Error deserializing message: %v\n", err)
 			}
 			continue
 		}
 
 		rollbackTicket(*result.EventId)
-		if err := queue.DeleteMessage(msg.ReceiptHandle); err != nil {
+		if err := queue.DeleteMessage(queue.QueueRollbackTicket, msg.ReceiptHandle); err != nil {
 			logger.Error("Ocurred errro when try delete message queue", err)
 		}
 	}

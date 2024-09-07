@@ -5,11 +5,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs"
 )
 
-func ReceveidMessage() (*sqs.ReceiveMessageOutput, error) {
+func ReceveidMessage(queueUrl *sqs.GetQueueUrlOutput) (*sqs.ReceiveMessageOutput, error) {
 	svc := sqs.New(awsSession)
 
 	msgResult, err := svc.ReceiveMessage(&sqs.ReceiveMessageInput{
-		QueueUrl:            queueRollbackTicket.QueueUrl,
+		QueueUrl:            queueUrl.QueueUrl,
 		MaxNumberOfMessages: aws.Int64(10),
 		WaitTimeSeconds:     aws.Int64(10),
 	})

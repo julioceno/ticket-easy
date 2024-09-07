@@ -7,7 +7,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-// TODO: refactor name
 public class CreateTicketToSendMicrosserviceDTO {
     private String userId;
     private String eventId;
