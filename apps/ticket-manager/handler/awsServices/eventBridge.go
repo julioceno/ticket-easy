@@ -97,14 +97,37 @@ func CreateEvent(ticketId string) error {
 }
 
 func DeleteEvent(ticketId string) error {
-	ids := []string{"lambda"}
-	_, err := eventBridgeService.RemoveTargets(&eventbridge.RemoveTargetsInput{
-		Rule:  aws.String(ticketId),
-		Ids:   aws.StringSlice(ids),
-		Force: aws.Bool(true),
+	listTargetsOutput, err := eventBridgeService.ListTargetsByRule(&eventbridge.ListTargetsByRuleInput{
+		Rule: aws.String(ticketId),
 	})
 	if err != nil {
-		logger.Error("failed remove targets from lambda, %v", err)
+		logger.Error("failed to list targets, %v", err)
+		return err
+	}
+
+	if len(listTargetsOutput.Targets) > 0 {
+		ids := []string{"lambda"}
+		_, err := eventBridgeService.RemoveTargets(&eventbridge.RemoveTargetsInput{
+			Rule:  aws.String(ticketId),
+			Ids:   aws.StringSlice(ids),
+			Force: aws.Bool(true),
+		})
+		if err != nil {
+			logger.Error("failed to remove targets from lambda, %v", err)
+			return err
+		}
+	} else {
+		logger.Info("No targets found for the rule")
+	}
+
+	_, err = eventBridgeService.DescribeRule(&eventbridge.DescribeRuleInput{
+		Name: aws.String(ticketId),
+	})
+
+	if err != nil {
+		if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() == eventbridge.ErrCodeResourceNotFoundException {
+			return nil
+		}
 		return err
 	}
 

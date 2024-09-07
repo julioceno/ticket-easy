@@ -13,22 +13,20 @@ import (
 )
 
 var (
-	eventMutexesRollbackTicket = &sync.Map{}
+	mutexRollbackTicket sync.Mutex
 )
 
 func rollbackTicket(eventId string) (*schemas.Event, *utils.ErrorPattern) {
-	mutexInterface, _ := eventMutexesRollbackTicket.LoadOrStore(eventId, &sync.Mutex{})
-	mutex := mutexInterface.(*sync.Mutex)
-	mutex.Lock()
+	mutexRollbackTicket.Lock()
+	defer mutexRollbackTicket.Unlock()
 
-	ctxMongo, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctxMongo, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
 	currentEvent := eventsRepository.FindById(&eventId, &ctxMongo)
 	if currentEvent == nil {
 		msg := fmt.Sprintf("Event with id %s not exists", currentEvent.Id.Hex())
 		logger.Error(msg, nil)
-		fmt.Print("Break 1 \n")
 		return nil, &utils.ErrorPattern{
 			Code:    http.StatusNotFound,
 			Message: msg,
@@ -37,10 +35,8 @@ func rollbackTicket(eventId string) (*schemas.Event, *utils.ErrorPattern) {
 
 	currentEvent.QuantityTickets++
 	event, err := eventsRepository.UpdateById(&eventId, &ctxMongo, currentEvent)
-	mutex.Unlock()
 	if err != nil {
 		msg := "Ocurred error when try update event"
-		fmt.Print("Break 2 \n")
 		logger.Error(msg, err)
 		return nil, &utils.ErrorPattern{
 			Code:    http.StatusBadRequest,

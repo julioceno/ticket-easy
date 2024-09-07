@@ -73,7 +73,7 @@ public class TicketsService {
             HttpEntity<String> httpEntity = createHttpEntity(null);
             RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
 
-            String url =getUrl() + id + "/payment";
+            String url = getUrl() + id + "/payment";
             UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(url);
             urlBuilder.queryParam("userId", userId);
 

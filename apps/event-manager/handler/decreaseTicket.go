@@ -21,7 +21,7 @@ type _body struct {
 }
 
 var (
-	eventMutexesDecreaseTicket = &sync.Map{}
+	mutexDecreaseTicket sync.Mutex
 )
 
 func decreaseTicket(event *schemas.Event, ticketId *string) {
@@ -34,18 +34,13 @@ func decreaseTicket(event *schemas.Event, ticketId *string) {
 }
 
 func updateEventDecreaseTicket(event *schemas.Event) *string {
+	mutexDecreaseTicket.Lock()
+	defer mutexDecreaseTicket.Unlock()
+
+	ctxMongo, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
 	eventId := event.Id.Hex()
-	mutexInterface, _ := eventMutexesDecreaseTicket.LoadOrStore(eventId, &sync.Mutex{})
-	mutex := mutexInterface.(*sync.Mutex)
-	mutex.Lock()
-
-	ctxMongo, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer func() {
-		cancel()
-		mutex.Unlock()
-		eventMutexesDecreaseTicket.Delete(eventId)
-	}()
-
 	currentEvent := eventsRepository.FindById(&eventId, &ctxMongo)
 	notHasTickets := currentEvent.QuantityTickets < 1
 	if notHasTickets {
@@ -55,6 +50,7 @@ func updateEventDecreaseTicket(event *schemas.Event) *string {
 
 	currentEvent.QuantityTickets--
 	eventsRepository.UpdateById(&eventId, &ctxMongo, currentEvent)
+
 	return nil
 }
 

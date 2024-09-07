@@ -63,7 +63,7 @@ func verifyIsExpired(ticket *schemas.Ticket) bool {
 	createdAt := ticket.CreatedAt
 	currentTime := time.Now()
 	diff := currentTime.Sub(createdAt)
-	isExpired := diff > 2*time.Minute
+	isExpired := diff > 1*time.Minute
 
 	return isExpired
 }

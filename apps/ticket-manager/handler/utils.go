@@ -26,7 +26,7 @@ func updateEventError(ctxMongo *context.Context, messageError *string, ticket *s
 func getTicket(id *string, ctxMongo *context.Context, filters primitive.M) (*schemas.Ticket, *string) {
 	ticket := ticketsRepository.FindById(id, ctxMongo, filters)
 	if ticket == nil {
-		logger.Error("When try update ticket, document not exists", errors.New(fmt.Sprint("Ticket with id %v not exists", id)))
+		logger.Error("When try update ticket, document not exists", errors.New(fmt.Sprint("Ticket with id %v not exists", *id)))
 		msg := fmt.Sprintf("Ticket de id %v não existe", *id)
 		return nil, &msg
 	}

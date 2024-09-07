@@ -36,10 +36,9 @@ public class TicketsController {
         @Autowired
         private TicketsService ticketsService;
 
-        // TODO: documentar melhor essa parte
         @Operation(summary = "Inicia o processo de garantir o ticket")
         @ApiResponses(value = {
-                        @ApiResponse(responseCode = "201", description = "Informa que esta sendo feito o processo de garantir o ingresso, esse processo pode demorar um pouco pois ele é sincrono"),
+                        @ApiResponse(responseCode = "201", description = "Informa que esta sendo feito o processo de garantir o ingresso, esse processo pode demorar um pouco pois ele é assincrono. Então é retornado o status 201 antes de começar o processo de compra proprieamente dito."),
         })
         @PostMapping
         public ResponseEntity<ResponseTicketDTO> create(@RequestBody CreateTicketDTO dto) {
@@ -50,14 +49,14 @@ public class TicketsController {
 
                 ResponseTicketDTO responseTicketDTO = ticketsService.create(dtoSendMicroservice);
                 URI uri = ServletUriComponentsBuilder
-                        .fromCurrentRequest()
-                        .path("/{id}")
-                        .buildAndExpand(responseTicketDTO.getData().getId())
-                        .toUri();
+                                .fromCurrentRequest()
+                                .path("/{id}")
+                                .buildAndExpand(responseTicketDTO.getData().getId())
+                                .toUri();
 
                 return ResponseEntity
-                        .created(uri)
-                        .body(responseTicketDTO);
+                                .created(uri)
+                                .body(responseTicketDTO);
         }
 
         @Operation(summary = "Busca por um ticket pelo id")
@@ -73,7 +72,7 @@ public class TicketsController {
 
         @Operation(summary = "Faz o pagamento pendente de um ingresso")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "204", description = "Informa que a request foi bem sucedida"),
+                        @ApiResponse(responseCode = "204", description = "Informa que a request foi bem sucedida"),
         })
         @PatchMapping("/{id}/payment")
         public ResponseEntity<ResponseTicketDTO> payment(@PathVariable String id) {
