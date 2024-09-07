@@ -2,7 +2,9 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -43,6 +45,7 @@ func ExpireTicket(ctx *gin.Context) {
 		return
 	}
 
+	sendRollbackTicketHttp(&ticket.EventId)
 	if err := deleteLambdaExpression(ticket.Id.Hex()); err != nil {
 		utils.SendError(ctx, err.Code, err.Message)
 		return
@@ -69,4 +72,31 @@ func deleteLambdaExpression(ticketId string) *utils.ErrorPattern {
 		return &errorCreated
 	}
 	return nil
+}
+
+func sendRollbackTicketHttp(eventId *string) bool {
+	eventUrl := os.Getenv("EVENT_URL")
+	apiKey := os.Getenv("EVENT_API_KEY")
+	url := fmt.Sprintf("%s/events/%s/rollback-ticket", eventUrl, *eventId)
+
+	req, err := http.NewRequest("PATCH", url, nil)
+	if err != nil {
+		logger.Error("Occurred error in build request", err)
+		return true
+	}
+
+	req.Header.Set("x-api-key", apiKey)
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	response, err := client.Do(req)
+	if err != nil {
+		logger.Error("Occurred error in call event system", err)
+		return true
+	}
+
+	if ocurredAnyError := response.StatusCode != http.StatusNoContent; ocurredAnyError {
+		return true
+	}
+
+	return false
 }

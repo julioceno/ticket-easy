@@ -57,9 +57,9 @@ func updateEventDecreaseTicket(event *schemas.Event) *string {
 }
 
 func sentNotifyHttp(ticketId *string, message *string) bool {
-	eventUrl := os.Getenv("TICKET_URL")
+	ticketUrl := os.Getenv("TICKET_URL")
 	apiKey := os.Getenv("TICKET_API_KEY")
-	url := fmt.Sprintf("%s/tickets/%s", eventUrl, *ticketId)
+	url := fmt.Sprintf("%s/tickets/%s", ticketUrl, *ticketId)
 
 	status := "BUYING"
 	body := _body{MessageError: message, Status: &status}

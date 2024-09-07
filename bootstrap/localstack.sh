@@ -31,7 +31,8 @@ create_lambda() {
         --runtime go1.x \
         --zip-file fileb://${LAMBDA_ZIP_PATH} \
         --handler ${LAMBDA_NAME_TO_CREATE} \
-        --role arn:aws:iam::000000000000:role/cool-stacklifter
+        --role arn:aws:iam::000000000000:role/cool-stacklifter \
+        --timeout 60
 }
 
 
