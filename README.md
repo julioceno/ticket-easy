@@ -21,23 +21,28 @@ A aplicação segue a arquitetura de microserviços, dividindo as funcionalidade
 
 ### Componentes:
 
-1. **Serviço de Gerenciamento de Ingressos (Golang + Gin Gonic)**
+1. **Gateway (Java + Spring Boot)**
+   - Gerencia o processamento de autenticação.
+   - Faz a integração com os outros microserviços.
+
+2. **Serviço de Gerenciamento de Ingressos (Golang + Gin Gonic)**
    - Responsável por lidar com as solicitações de compra de ingressos.
    - Gerencia o inventário de ingressos em tempo real.
    - Usa AWS SQS para processar ordens de compra de forma assíncrona.
 
-2. **Serviço de Pagamento (Java + Spring Boot)**
-   - Gerencia o processamento de pagamentos via HTTP PATCH.
-   - Valida e atualiza o status da transação e retorna os resultados para o serviço de ingressos.
+3. **Serviço de Gerenciamento de Eventos (Golang + Gin Gonic)**
+   - Responsável por Gerenciar os eventos.
+   - Faz o debito do ingresso para um determinado evento.
+   - Usa AWS SQS para processar o desconto do ingresso forma assíncrona.
 
-3. **AWS Lambda**
+4. **AWS Lambda**
    - Executa funções serverless para tarefas críticas e baseadas em eventos.
    - Exemplo: Notificação ao usuário após a confirmação do pagamento.
 
-4. **AWS EventBridge**
+5. **AWS EventBridge**
    - Gerencia eventos disparados em todo o sistema, garantindo que as mudanças de estado (ex: compra confirmada) sejam propagadas corretamente para os serviços relevantes.
 
-5. **AWS SQS**
+6. **AWS SQS**
    - Assegura que todas as ordens e pagamentos sejam processados de maneira assíncrona, com alta resiliência e escalabilidade.
 
 ## 🏗️ Instalação e Configuração
